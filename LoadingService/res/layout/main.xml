@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?><LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+    <LinearLayout 
+        android:gravity="center_horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="270dip"
+        android:background="@drawable/bg"
+        android:orientation="vertical">
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/choose_devices" />
+	<RadioGroup
+	    android:id="@+id/rdg1"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="vertical">
+		<RadioButton
+			android:id="@+id/device1"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/str_d1"/>
+		<RadioButton
+			android:id="@+id/device2"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/str_d2"/>
+		<RadioButton
+			android:id="@+id/device3"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/str_d3"/>
+		<RadioButton
+			android:id="@+id/device4"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/str_d4"/>
+	</RadioGroup>
+	</LinearLayout>
+    <LinearLayout
+        android:background="@drawable/bg"
+        android:layout_width="fill_parent"
+        android:layout_height="270dip"
+        android:orientation="vertical">
+	<TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/input_filename" />
+	       <Spinner
+            android:id="@+id/ps_spinnner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+	<EditText
+	    android:id="@+id/filename"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:ems="10"
+	    android:text="@string/input_filename">
+	</EditText>
+	</LinearLayout>
+
+    <LinearLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="90dip"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:background="@drawable/bg"
+        android:layout_gravity="bottom">
+		<Button
+			android:id="@+id/startButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/start_service"/>
+		<Button
+			android:id="@+id/stopButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/stop_service"/>
+    </LinearLayout>
+</LinearLayout>

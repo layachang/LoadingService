@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, Loading!</string>
+    <string name="app_name">Loading</string>
+    <string name="choose_devices">Choose your device</string>
+    <string name="input_filename">Input output file name</string>
+    <string name="str_d1">SAMSUNG S2</string>
+	<string name="str_d2">GT-P6100</string>
+	<string name="str_d3">GT-P1000</string>
+	<string name="str_d4">ACER Picasa MF</string>
+	<string name="start_service">Start Service</string>
+	<string name="stop_service">Stop Service</string>
+	<string name="len1file">LEN_60_</string>
+	<string name="len2file">LEN_606_</string>
+</resources>
