@@ -43,7 +43,7 @@ public class Loading extends Activity {
 	public final static boolean CPU_PID_DEBUG = false; //ProcState
 	public final static boolean MEM_DEBUG = false; //MemInfo
 	public final static boolean MEM_PID_DEBUG = false; //MemInfo
-	public final static boolean DISK_DEBUG = true; //DiskState
+	public final static boolean DISK_DEBUG = false; //DiskState
 	public final static boolean NET_DEBUG = true; //ProcNetDev
 	public final static boolean BATT_DEBUG = true; //BattInfoProc
 	public final static boolean BLUE_DEBUG = true; //Bluetooth
@@ -84,6 +84,7 @@ public class Loading extends Activity {
 	private String KEY_DATA = "";
 	private int READ_LINE = 0;
 	private int NUM_CPU = 0;
+	private int KEY_FILESYSTEM = 4;
 	
 	
 	private Button startButton;
@@ -386,10 +387,14 @@ public class Loading extends Activity {
 			break;
 		case DEVICE_NUM_GALAXY_NOTE_GTP6800:
 			setREAD_LINE(10);
-			setKEY_CACHE("stl11");
-			setKEY_SYSTEM("stl9");
-			setKEY_DATA("mmcblk0p2");
+			setKEY_CACHE("mmcblk0p7");
+			setKEY_SYSTEM("mmcblk0p9");
+			setKEY_DATA("mmcblk0p10");
+			//setKEY_CACHE("stl11");
+			//setKEY_SYSTEM("stl9");
+			//setKEY_DATA("mmcblk0p2");
 			setNUM_CPU(1);
+			setKEY_FILESYSTEM(4);
 			break;
 		case DEVICE_NUM_GALAXY_NOTE_GTP6810:
 			setREAD_LINE(10);
@@ -424,6 +429,7 @@ public class Loading extends Activity {
     		intent.putExtra("KEY_DATA", getKEY_DATA());
     		intent.putExtra("READ_LINE", getREAD_LINE());
     		intent.putExtra("NUM_CPU", getNUM_CPU());
+    		intent.putExtra("KEY_FILESYSTEM", getKEY_FILESYSTEM());
     		intent.putExtra("FILE_NAME", mFileName);
     		intent.putExtra("PROCESS_NAME", mProcessName);
     		intent.putExtra("PID", mPID);
@@ -505,7 +511,14 @@ public class Loading extends Activity {
 		READ_LINE = rEAD_LINE;
 	}
 	
+	public int getKEY_FILESYSTEM() {
+		return KEY_FILESYSTEM;
+	}
 
+	public void setKEY_FILESYSTEM(int kEY_FILESYSTEM) {
+		KEY_FILESYSTEM = kEY_FILESYSTEM;
+	}
+	
 	//private RunningAppInfo getAppInfo(ApplicationInfo app, int pid, String processName) {
 	//	RunningAppInfo appInfo = new RunningAppInfo();
 	//	appInfo.setAppLabel((String) app.loadLabel(pm));

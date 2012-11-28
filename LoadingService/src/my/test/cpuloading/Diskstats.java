@@ -13,6 +13,7 @@ public class Diskstats extends BasicFunc {
 	private String KEY_CACHE = "";
 	private String KEY_SYSTEM = "";
 	private String KEY_DATA = "";
+	private int mSize = 4; //Kb
 /*
  *	  1       0 ram0 0 0 0 0 0 0 0 0 0 0 0
  *	  1       1 ram1 0 0 0 0 0 0 0 0 0 0 0
@@ -65,24 +66,24 @@ public class Diskstats extends BasicFunc {
  */
 	private int mLastReadsIssued;  //[3]
 	private int mCurrReadsIssued;
-	private int initReadsIssued;
-	
+	private int mInitReadsIssued;
+
 	private int mLastReadsMerged;  //[4]
 	private int mCurrReadsMerged;
-	private int initReadsMerged;
-	
+	private int mInitReadsMerged;
+
     private int mLastWriteMerged;  //[8]
     private int mCurrWriteMerged;
-    private int initWriteMerged;
-    
+    private int mInitWriteMerged;
+
 	private int mLastSectorsRead;  //[5]
 	private int mCurrSectorsRead;
-	private int initSectorsRead;
-	
+	private int mInitSectorsRead;
+
 	private int mLastSectorsWrite; //[9]
 	private int mCurrSectorsWrite;
-	private int initSectorsWrite;
-	
+	private int mInitSectorsWrite;
+
 	private int mSectorReadLast=-1;
 	private int mSectorWriteLast=-1;
 	private int mReadInitTime=-1;
@@ -91,20 +92,24 @@ public class Diskstats extends BasicFunc {
 	private int mWriteInitTime=-1;
 	private int mWriteLastTime=-1;
 	private int mWriteAmount=0;
+	private int mSectorReadVar = 0;
+	private int mSectorWriteVar = 0;
 
-	public Diskstats(String cache, String system, String data) {
+	public Diskstats(String cache, String system, String data, int size) {
 		KEY_CACHE = cache;
 		KEY_SYSTEM = system;
 		KEY_DATA = data;
+		mSize = size;
+		Log.v(Loading.TAG, "Diskstats, cache="+cache+"; system="+system+"; data="+data+"; size="+size);
 	}
 
 	protected void dumpValues() {
 		ArrayList<String> result = null;
-		mCurrReadsIssued= mCurrReadsMerged= mCurrWriteMerged= mCurrSectorsRead= mCurrSectorsWrite=0;
 	    try {
+	    	moveValues();
 	        RandomAccessFile reader = new RandomAccessFile(Loading.STR_DISK_DISKSTATE, "r");
 	        for(;;){
-	            //moveValues();
+
 		        String load = reader.readLine();
 		        if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "load: "+load); 
 		        if(load==null) {
@@ -112,88 +117,104 @@ public class Diskstats extends BasicFunc {
 		        	break;
 		        }
 		        result = dataPasing(load);
-		        if (result.get(2).equals(KEY_CACHE) || 
-		                result.get(2).equals(KEY_SYSTEM) ||
-		                result.get(2).equals(KEY_DATA)) {
-		        	if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG,load);
+		        if (result.get(2).equals(KEY_SYSTEM) || result.get(2).equals(KEY_DATA)) {
+		        	if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG,"Parsing Data!!");
+
 		            mCurrReadsIssued += Integer.parseInt(result.get(3));
 		            if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "result.get(3)="+result.get(3)+"+="+mCurrReadsIssued);
+
 		            mCurrReadsMerged += Integer.parseInt(result.get(4));
 		            if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "result.get(4)="+result.get(4)+"+="+mCurrReadsMerged);
+
 		            mCurrWriteMerged += Integer.parseInt(result.get(8));
 		            if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "result.get(8)="+result.get(8)+"+="+mCurrWriteMerged);
+
 		            mCurrSectorsRead += Integer.parseInt(result.get(5));
 		            if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "result.get(5)="+result.get(5)+"+="+mCurrSectorsRead);
+
 		            mCurrSectorsWrite += Integer.parseInt(result.get(9));
 		            if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "result.get(9)="+result.get(9)+"+="+mCurrSectorsWrite);
 		        }
-	        } 
+		        else if(result.get(2).equals(KEY_CACHE)) {
+		        	if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG,"Parsing Data!! (First)");
 
-	    	if(initReadsIssued==-1) initReadsIssued = mCurrReadsIssued;
-	    	if(initReadsMerged==-1) initReadsMerged = mCurrReadsMerged;
-	    	if(initWriteMerged==-1) initWriteMerged = mCurrWriteMerged;
-	    	if(initSectorsRead==-1) initSectorsRead = mCurrSectorsRead;
-	    	if(initSectorsWrite==-1) initSectorsWrite = mCurrSectorsWrite;
-	    } 
-	    
+		            mCurrReadsIssued = Integer.parseInt(result.get(3));
+		            if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "result.get(3)="+result.get(3)+"+="+mCurrReadsIssued);
+
+		            mCurrReadsMerged = Integer.parseInt(result.get(4));
+		            if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "result.get(4)="+result.get(4)+"+="+mCurrReadsMerged);
+
+		            mCurrWriteMerged = Integer.parseInt(result.get(8));
+		            if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "result.get(8)="+result.get(8)+"+="+mCurrWriteMerged);
+
+		            mCurrSectorsRead = Integer.parseInt(result.get(5));
+		            if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "result.get(5)="+result.get(5)+"+="+mCurrSectorsRead);
+
+		            mCurrSectorsWrite = Integer.parseInt(result.get(9));
+		            if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "result.get(9)="+result.get(9)+"+="+mCurrSectorsWrite);
+		        }
+	        } 
+	    	if(mInitReadsIssued==-1) mInitReadsIssued = mCurrReadsIssued;
+	    	if(mInitReadsMerged==-1) mInitReadsMerged = mCurrReadsMerged;
+	    	if(mInitWriteMerged==-1) mInitWriteMerged = mCurrWriteMerged;
+	    	if(mInitSectorsRead==-1) mInitSectorsRead = mCurrSectorsRead;
+	    	if(mInitSectorsWrite==-1) mInitSectorsWrite = mCurrSectorsWrite;
+	    }
 	    catch (IOException ex) {
 	    	ex.printStackTrace();
 	    }
 	}
+
     private void moveValues() {
         mLastReadsIssued = mCurrReadsIssued;
         mLastReadsMerged = mCurrReadsMerged;
         mLastWriteMerged = mCurrWriteMerged;
         mLastSectorsRead = mCurrSectorsRead;
         mLastSectorsWrite = mCurrSectorsWrite;
-        mCurrReadsIssued = mCurrReadsMerged = mCurrWriteMerged = mCurrSectorsRead = mCurrSectorsWrite = 0;
     }
     
-    private int getReadIssued() {
-    	return mCurrReadsIssued;
-    }
-    private int getReadReadMerged() {
-    	return mCurrReadsMerged;
-    }
-    private int getWriteMerged() {
-    	return mCurrWriteMerged;
-    }
+    private int getReadIssued() { return mCurrReadsIssued; }
+    private int getReadReadMerged() { return mCurrReadsMerged; }
+    private int getWriteMerged() { return mCurrWriteMerged; }
+
     private int getSectorsRead() {
     	if (mSectorReadLast==-1) {
     		mSectorReadLast = mCurrSectorsRead ;
     	}
-    	int variation = mCurrSectorsRead-mSectorReadLast;
-    	mSectorReadLast = mCurrSectorsRead ;
-    	return variation;
+    	mSectorReadVar = mCurrSectorsRead-mSectorReadLast;
+    	if(Loading.DEBUG && Loading.DISK_DEBUG)
+    		Log.v(Loading.TAG,
+    			"getSectorsRead: "+mSectorReadVar+" = "+mCurrSectorsRead+" - "+mSectorReadLast);
+    	return mSectorReadVar;
     }
+
     private int getSectorsWrite() {
     	if (mSectorWriteLast==-1) {
     		mSectorWriteLast = mCurrSectorsWrite ;
     	}
-    	int variation = mCurrSectorsWrite - mSectorWriteLast;
-    	mSectorWriteLast = mCurrSectorsWrite ;
-    	return variation;
-    }
-    protected int printSectorsRead() {
-    	if (mSectorReadLast==-1) {
-    		mSectorReadLast = mCurrSectorsRead;
-    	}
-    	int variation = mCurrSectorsRead - mSectorReadLast;
-    	mSectorReadLast = mCurrSectorsRead ;
-    	return variation;
+    	mSectorWriteVar = mCurrSectorsWrite - mSectorWriteLast;
+    	if(Loading.DEBUG && Loading.DISK_DEBUG)
+    		Log.v(Loading.TAG,
+    			"getSectorsWrite: "+mSectorWriteVar+" = "+mCurrSectorsWrite+" - "+mSectorWriteLast);
+    	return mSectorWriteVar;
     }
  
     protected String getValues(int index){
 		if (index==DISK_READ_INDEX) {
-			final int read = getSectorsRead();
+			final int read = getSectorsRead() * mSize;
 			recordMaxMin(DISK_READ_INDEX, read);
 			recordMean(DISK_READ_INDEX, read);
 			return String.valueOf(read);
 		} else if (index==DISK_WRITE_INDEX) {
-			final int write = getSectorsRead();
+			final int write = getSectorsWrite() * mSize;
 			recordMaxMin(DISK_WRITE_INDEX, write);
 			recordMean(DISK_WRITE_INDEX, write);
 			return String.valueOf(write);
+		} else if (index==DISK_ALL_INDEX) {
+			final int totla = (mSectorWriteVar + mSectorReadVar) * mSize;
+			recordMaxMin(DISK_ALL_INDEX, totla);
+			recordMean(DISK_ALL_INDEX, totla);
+			return String.valueOf(totla);
 		}
 		return null;
 	}

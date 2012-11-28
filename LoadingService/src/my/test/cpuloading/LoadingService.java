@@ -20,6 +20,7 @@ public class LoadingService extends Service  {
 	private String KEY_CACHE = "";
 	private String KEY_SYSTEM = "";
 	private String KEY_DATA = "";
+	private int KEY_FILESYSTEM = 4; //Sector size
 	private int READ_LINE= 0;
 	private int NUM_CPU= 0;
 	private String mFileName;
@@ -60,7 +61,7 @@ public class LoadingService extends Service  {
         mCpuPid = new DumpCPU(pid,uid);
         mMemAll = new MemInfo();
         mMemPid = new DumpMEM(pid);
-        mDiskAll = new Diskstats(KEY_CACHE, KEY_SYSTEM, KEY_DATA);
+        mDiskAll = new Diskstats(KEY_CACHE, KEY_SYSTEM, KEY_DATA, KEY_FILESYSTEM);
         //mNetAll = new ProcNetDev(READ_LINE);
         //mNetUid = new NetStats(uid);
         //mBattAll = new BattInfoProc();
@@ -75,6 +76,7 @@ public class LoadingService extends Service  {
 	    	KEY_CACHE = b.getString("KEY_CACHE");
 	    	KEY_SYSTEM = b.getString("KEY_SYSTEM");
 	    	KEY_DATA = b.getString("KEY_DATA");
+	    	KEY_FILESYSTEM = b.getInt("KEY_FILESYSTEM");
 	    	mFileName = b.getString("FILE_NAME");
 	    	mProcessName = b.getString("PROCESS_NAME");
 	    	mPID = b.getInt("PID");
@@ -135,7 +137,7 @@ public class LoadingService extends Service  {
 		if (mFirst) {
 			mFirst = false;
 			StringBuffer input = new StringBuffer();
-			input.append(",CPU ALL,CPU PID,MEM ALL, MEM PID,DISK ALL,NET ALL, NET UID,BATT,AUDIO ");
+			input.append(",CPU ALL,CPU PID,MEM ALL, MEM PID,DISK ALL,DISK READ,DISK WRITE,NET ALL, NET UID,BATT,AUDIO ");
 			return;
 		}
 		long currTime = System.currentTimeMillis();
@@ -145,7 +147,9 @@ public class LoadingService extends Service  {
 		input.append(mCpuPid.getValues(BasicFunc.CPU_PID_INDEX)); input.append(",");
 		input.append(mMemAll.getValues(BasicFunc.MEM_ALL_INDEX)); input.append(",");
 		input.append(mMemPid.getValues(BasicFunc.MEM_PID_INDEX)); input.append(",");
+		input.append(mDiskAll.getValues(BasicFunc.DISK_ALL_INDEX)); input.append(",");
 		input.append(mDiskAll.getValues(BasicFunc.DISK_READ_INDEX)); input.append(",");
+		input.append(mDiskAll.getValues(BasicFunc.DISK_WRITE_INDEX)); input.append(",");
 		//input.append(mNetAll.getValues(BasicFunc.NET_ALL_INDEX)); input.append(",");
 		//input.append(mNetUid.getValues(BasicFunc.NET_UID_INDEX)); input.append(",");
 		//input.append(mBattAll.getValues(BasicFunc.BATT_ALL_INDEX)); input.append(",");

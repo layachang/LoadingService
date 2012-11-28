@@ -56,6 +56,7 @@ public class ProcStat extends BasicFunc {
 
 	public ProcStat(int pid, int uid, int cpu_num) {
 		CPU_NUM = cpu_num;
+		Log.v(Loading.TAG, "ProcStat, pid="+pid+"; uid="+uid+"; cpu_num="+cpu_num);
 	}
 
 	protected void dumpValues() {
