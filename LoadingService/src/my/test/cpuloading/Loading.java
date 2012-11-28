@@ -44,7 +44,7 @@ public class Loading extends Activity {
 	public final static boolean MEM_DEBUG = false; //MemInfo
 	public final static boolean MEM_PID_DEBUG = false; //MemInfo
 	public final static boolean DISK_DEBUG = false; //DiskState
-	public final static boolean NET_DEBUG = true; //ProcNetDev
+	public final static boolean NET_DEBUG = false; //ProcNetDev
 	public final static boolean BATT_DEBUG = true; //BattInfoProc
 	public final static boolean BLUE_DEBUG = true; //Bluetooth
 	public final static boolean AUDIO_DEBUG = true; //Audio
@@ -386,7 +386,7 @@ public class Loading extends Activity {
 			setNUM_CPU(1);
 			break;
 		case DEVICE_NUM_GALAXY_NOTE_GTP6800:
-			setREAD_LINE(10);
+			setREAD_LINE(7);
 			setKEY_CACHE("mmcblk0p7");
 			setKEY_SYSTEM("mmcblk0p9");
 			setKEY_DATA("mmcblk0p10");

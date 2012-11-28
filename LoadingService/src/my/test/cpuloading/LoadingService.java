@@ -62,7 +62,7 @@ public class LoadingService extends Service  {
         mMemAll = new MemInfo();
         mMemPid = new DumpMEM(pid);
         mDiskAll = new Diskstats(KEY_CACHE, KEY_SYSTEM, KEY_DATA, KEY_FILESYSTEM);
-        //mNetAll = new ProcNetDev(READ_LINE);
+        mNetAll = new ProcNetDev(READ_LINE);
         //mNetUid = new NetStats(uid);
         //mBattAll = new BattInfoProc();
         //mVolAll = new VisualizerLinster();
@@ -116,7 +116,7 @@ public class LoadingService extends Service  {
             mCpuAll.dumpValues();       //CPU
             mMemAll.dumpValues();      	//MEM
         	mDiskAll.dumpValues();      //Flash
-            //mNetAll.dumpValues();    	//Network
+            mNetAll.dumpValues();    	//Network
             try {
                 Thread.sleep(360);
             } catch (Exception e) {}
@@ -126,7 +126,7 @@ public class LoadingService extends Service  {
         	mMemAll.dumpValues();
         	mMemPid.dumpValues();
         	mDiskAll.dumpValues();
-        	//mNetAll.dumpValues();
+        	mNetAll.dumpValues();
         	//mNetUid.dumpValues();
         	//mBattAll.dumpValues();
         }
@@ -150,7 +150,7 @@ public class LoadingService extends Service  {
 		input.append(mDiskAll.getValues(BasicFunc.DISK_ALL_INDEX)); input.append(",");
 		input.append(mDiskAll.getValues(BasicFunc.DISK_READ_INDEX)); input.append(",");
 		input.append(mDiskAll.getValues(BasicFunc.DISK_WRITE_INDEX)); input.append(",");
-		//input.append(mNetAll.getValues(BasicFunc.NET_ALL_INDEX)); input.append(",");
+		input.append(mNetAll.getValues(BasicFunc.NET_ALL_INDEX)); input.append(",");
 		//input.append(mNetUid.getValues(BasicFunc.NET_UID_INDEX)); input.append(",");
 		//input.append(mBattAll.getValues(BasicFunc.BATT_ALL_INDEX)); input.append(",");
 		//input.append(mVolAll.getValues(BasicFunc.AUDIO_ALL_INDEX)); input.append(",");

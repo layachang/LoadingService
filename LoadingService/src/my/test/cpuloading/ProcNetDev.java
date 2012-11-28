@@ -101,7 +101,12 @@ public class ProcNetDev extends BasicFunc {
 	private int mCuTranW0Packets=-1;
 	private int mCuTranW0Errs=-1;
 	private int mCuTranW0Drop=-1;
-	
+
+	public ProcNetDev(int line_num) {
+		READ_LINE= line_num;
+		Log.v(Loading.TAG, "ProcNetDev, line_num"+line_num); 
+	}
+
 	public long getTotalRxBytes(){  
 		return TrafficStats.getTotalRxBytes()==TrafficStats.UNSUPPORTED?0:(TrafficStats.getTotalRxBytes()/1024);
 	}
@@ -123,10 +128,7 @@ public class ProcNetDev extends BasicFunc {
 		mLaTranW0Errs = mCuTranW0Errs;
 		mLaTranW0Drop = mCuTranW0Drop;
 	}
-	
-	public ProcNetDev(int line_num) {
-		READ_LINE= line_num;
-	}
+
 	protected void dumpValues() {
 	    try {
 	    	moveValues();
@@ -145,20 +147,26 @@ public class ProcNetDev extends BasicFunc {
 		    	mCuReW0Packets = Integer.parseInt(result.get(2));
 		    	mCuReW0Errs = Integer.parseInt(result.get(3));
 		    	mCuReW0Drop = Integer.parseInt(result.get(4));
-		    	if (initReW0Bytes==-1) initReW0Bytes = mCuReW0Bytes;
-		    	if (initReW0Packets==-1) initReW0Packets = mCuReW0Packets;
-		    	if (initReW0Errs==-1) initReW0Errs = mCuReW0Errs;
-		    	if (initReW0Drop==-1) initReW0Drop = mCuReW0Drop;
 
 		    	mCuTranW0Bytes = Integer.parseInt(result.get(9));
 		    	mCuTranW0Packets = Integer.parseInt(result.get(10));
 		    	mCuTranW0Errs = Integer.parseInt(result.get(11));
 		    	mCuTranW0Drop = Integer.parseInt(result.get(12));
+
+		    	if (Loading.DEBUG && Loading.NET_DEBUG) {
+		    		Log.v(Loading.TAG, "mCuReW0Bytes: "+mCuReW0Bytes+"; mCuTranW0Bytes="+mCuTranW0Bytes);
+		    		Log.v(Loading.TAG, "mCuReW0Packets: "+mCuReW0Packets+"; mCuTranW0Packets="+mCuTranW0Packets); 
+		    		Log.v(Loading.TAG, "mCuReW0Errs: "+mCuReW0Errs+"; mCuTranW0Errs="+mCuTranW0Errs); 
+		    		Log.v(Loading.TAG, "mCuReW0Drop: "+mCuReW0Drop+"; mCuTranW0Drop="+mCuTranW0Drop); 
+		    	}
+		    	if (initReW0Bytes==-1) initReW0Bytes = mCuReW0Bytes;
+		    	if (initReW0Packets==-1) initReW0Packets = mCuReW0Packets;
+		    	if (initReW0Errs==-1) initReW0Errs = mCuReW0Errs;
+		    	if (initReW0Drop==-1) initReW0Drop = mCuReW0Drop;
 		    	if (initTranW0Bytes==-1) initTranW0Bytes = mCuTranW0Bytes;
 		    	if (initTranW0Packets==-1) initTranW0Packets = mCuTranW0Packets;
 		    	if (initTranW0Errs==-1) initTranW0Errs = mCuTranW0Errs;
 		    	if (initTranW0Drop==-1) initTranW0Drop = mCuTranW0Drop;
-
 	        }
 	        reader.close();
 	    } catch (IOException ex) {
