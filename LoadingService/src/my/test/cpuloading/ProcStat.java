@@ -3,84 +3,84 @@ package my.test.cpuloading;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 import android.content.Context;
 import android.util.Log;
 
-public class ProcStat {
-
+public class ProcStat extends BasicFunc {
 	private int mLastCtxt = -1;
 	private int mCurrCtxt = -1;
 	private int mLastProcesses = -1;
 	private int mCurrProcesses = -1;
 	private int mProcs_running;
 	private int mProcs_blocked;
-	private long mLastIdle = -1;
-	private long mCurrIdle = -1;
-	private long mLastCpu = -1;
-	private long mCurrCpu = -1;
-	private long mCurrentTime=0;
-	private int mLogTime=0;
-	private Context mContext;
+	private long mLastIdle = 0;
+	private long mCurrIdle = 0;
+	private long mInitIdle = 0;
+	private long mLastCpu = 0;
+	private long mCurrCpu = 0;
+	private long mInitCpu = 0;
+
 	
-/* user: ¤@¯ë¶]¦buser mode¤Uªºprocesses
- * nice: ¶]¦buser mode¤Uªºnice processes
- * system: °õ¦æ¦bkernel mode¤Uªºprocesses
- * idle: cpu¶¢¶¢¨S¨Æªº²Ö­p¼Æ¶q
- * iowait: µ¥«ÝI/O§¹¦¨ªº®É¶¡
- * irq: °õ¦æ¤¤Â_ªA°Èªº®É¶¡
- * softirq: °õ¦æ³nÅé¤¤Â_ªA°Èªº®É¶¡
- * intr«á­±±µÄòµÛ«Ü¦h¦æ¼Æ¦r¡]¥]¬A«Ü¦hªº0¡^¡A¨ä­pºâ±q¶}¾÷¡]boot time¡^¥H¨Ó¨C¤@ºØ¤¤Â_ªºªA°È¦¸¼Æ¡A¨ä¤¤²Ä¤@Äæ¼Æ¦r¬O©Ò¦³¤¤Â_ªºÁ`¦X
- * ctxt²Ö­p©Ò¦³cpusªºcontext switches¦¸¼Æ
- * btime¬ö¿ý¨t²Î¶}¾÷®É¶ZÂ÷Unix epoch¦h¤Ö®É¶¡
- * processes¬ö¿ý¦³¦h¤Öprocesses»Pthreads³Q«Ø¥ß
- * procs_running¬ö¿ýcpu¥¿°õ¦æ¦h¤Ö­Óprocesses
- * procs_blocked°O¿ý·í¤U¦³¦h¤Öprocess³Qblock¦íµ¥«ÝI/OªA°È§¹¦¨
- * 
- *      [user][nice][system][idle] [iowait][irq][softirq]
- * cpu  92674  3321   53937 2090481  5710   53    1292 
- * cpu0 87275  2630   51703 984429   4714   53    1289
- * intr 3455384 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 123 0 3576 0 0 0 1 0 0 0 0 .....
- * ctxt 6435833
- * btime 1345392835
- * processes 8456
- * procs_running 1
- * procs_blocked 0
- * 
- */
+	/* user: ä¸€èˆ¬è·‘åœ¨user modeä¸‹çš„processes
+	 * nice: è·‘åœ¨user modeä¸‹çš„nice processes
+	 * system: åŸ·è¡Œåœ¨kernel modeä¸‹çš„processes
+	 * idle: cpué–’é–’æ²’äº‹çš„ç´¯è¨ˆæ•¸é‡
+	 * iowait: ç­‰å¾…I/Oå®Œæˆçš„æ™‚é–“
+	 * irq: åŸ·è¡Œä¸­æ–·æœå‹™çš„æ™‚é–“
+	 * softirq: åŸ·è¡Œè»Ÿé«”ä¸­æ–·æœå‹™çš„æ™‚é–“
+	 * intrå¾Œé¢æŽ¥çºŒè‘—å¾ˆå¤šè¡Œæ•¸å­—ï¼ˆåŒ…æ‹¬å¾ˆå¤šçš„0ï¼‰ï¼Œå…¶è¨ˆç®—å¾žé–‹æ©Ÿï¼ˆboot timeï¼‰ä»¥ä¾†æ¯ä¸€ç¨®ä¸­æ–·çš„æœå‹™æ¬¡æ•¸ï¼Œå…¶ä¸­ç¬¬ä¸€æ¬„æ•¸å­—æ˜¯æ‰€æœ‰ä¸­æ–·çš„ç¸½åˆ
+	 * ctxtç´¯è¨ˆæ‰€æœ‰cpusçš„context switchesæ¬¡æ•¸
+	 * btimeç´€éŒ„ç³»çµ±é–‹æ©Ÿæ™‚è·é›¢Unix epochå¤šå°‘æ™‚é–“
+	 * processesç´€éŒ„æœ‰å¤šå°‘processesèˆ‡threadsè¢«å»ºç«‹
+	 * procs_runningç´€éŒ„cpuæ­£åŸ·è¡Œå¤šå°‘å€‹processes
+	 * procs_blockedè¨˜éŒ„ç•¶ä¸‹æœ‰å¤šå°‘processè¢«blockä½ç­‰å¾…I/Oæœå‹™å®Œæˆ
+	 * 
+	 *      [user][nice][system][idle] [iowait][irq][softirq]
+	 * cpu  92674  3321   53937 2090481  5710   53    1292 
+	 * cpu0 87275  2630   51703 984429   4714   53    1289
+	 * intr 3455384 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 123 0 3576 0 0 0 1 0 0 0 0 .....
+	 * ctxt 6435833
+	 * btime 1345392835
+	 * processes 8456
+	 * procs_running 1
+	 * procs_blocked 0
+	 * 
+	 */
 	private int init_ctxt=-1;
 	private int init_processes=-1;
 	private int init_procs_running=-1;
 	private int init_procs_blocked=-1;
 	private int CPU_NUM=0;
-	
-	private WriteFile2SD wfile;
-	
-	public ProcStat(Context context, WriteFile2SD file, int cpu_num) {
-		mContext = context;
-		wfile = file; 
+
+	public ProcStat(int pid, int uid, int cpu_num) {
 		CPU_NUM = cpu_num;
-		Log.v(Loading.TAG, "CPU_NUM="+CPU_NUM);
 	}
 
-	protected void initProcStat(long ctime) {
-		mCurrentTime = ctime;
-		
+	protected void dumpValues() {
 	    try {
 	    	boolean isIntrLoad = false;
 	    	moveValues();
 	    	
 	        RandomAccessFile reader = new RandomAccessFile(Loading.STR_CPU_STAT, "r");
-	        if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "--"+Loading.STR_CPU_STAT+"--");
+	        if(Loading.DEBUG && Loading.CPU_DEBUG)
+	        	Log.v(Loading.TAG, "--"+Loading.STR_CPU_STAT+"--");
 	        
 	        String load = reader.readLine();
-	        if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "1:"+load);
+	        if(Loading.DEBUG && Loading.CPU_DEBUG)
+	        	Log.v(Loading.TAG, "1:"+load);
 	        
 	        String[] toks = load.split(" ");
 	        mCurrIdle = getIdle(toks);
 	        mCurrCpu = getCpu(toks);
+	        if(Loading.DEBUG && Loading.CPU_DEBUG) {
+	            Log.v(Loading.TAG, "mCurrIdle:"+mCurrIdle);
+	            Log.v(Loading.TAG, "mCurrCpu:"+mCurrCpu);
+	        }
 	        load = reader.readLine(); //cpu0
-	        if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "cpu0:"+load);
+	        if(Loading.DEBUG && Loading.CPU_DEBUG)
+	        	Log.v(Loading.TAG, "cpu0:"+load);
 	        if (CPU_NUM>1) {
 	        	for (int j=1; j<CPU_NUM;j++) {
 	    	        load = reader.readLine(); //cpu-n
@@ -90,37 +90,45 @@ public class ProcStat {
 	    	        	isIntrLoad = true;
 	    	        	break;
 	    	        } else {
-	    	        	if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "cpu"+j+":"+load);
+	    	        	if(Loading.DEBUG && Loading.CPU_DEBUG)
+	    	        		Log.v(Loading.TAG, "cpu"+j+":"+load);
 	    	        }
 	        	}
 	        }
 	        if(!isIntrLoad) load = reader.readLine(); //intr
-	        if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "intr:"+load);
+	        if(Loading.DEBUG && Loading.CPU_DEBUG)
+	        	Log.v(Loading.TAG, "intr:"+load);
 	        load = reader.readLine(); //ctxt
-	        if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "ctxt:"+load);
+	        if(Loading.DEBUG && Loading.CPU_DEBUG)
+	        	Log.v(Loading.TAG, "ctxt:"+load);
 	        toks = load.split(" ");
 	        mCurrCtxt = Integer.parseInt(toks[1]);
 	        if (init_ctxt==-1) init_ctxt = mCurrCtxt;
 	        
 	        load = reader.readLine(); //btime
-	        if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "btime:"+load);
-	        load = reader.readLine(); //processes -- ²Ö­p©Ò¦³cpusªºcontext switches¦¸¼Æ
-	        if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "processes:"+load);
+	        if(Loading.DEBUG && Loading.CPU_DEBUG)
+	        	Log.v(Loading.TAG, "btime:"+load);
+	        load = reader.readLine(); //processes -- ç´¯è¨ˆæ‰€æœ‰cpusçš„context switchesæ¬¡æ•¸
+	        if(Loading.DEBUG && Loading.CPU_DEBUG)
+	        	Log.v(Loading.TAG, "processes:"+load);
 	        toks = load.split(" ");
 	        mCurrProcesses = Integer.parseInt(toks[1]);
 	        if (init_processes==-1) init_processes = mCurrProcesses;
 	        
-	        load = reader.readLine(); //procs_running -- ¬ö¿ýcpu¥¿°õ¦æ¦h¤Ö­Óprocesses
-	        if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "procs_running:"+load);
+	        load = reader.readLine(); //procs_running -- ç´€éŒ„cpuæ­£åŸ·è¡Œå¤šå°‘å€‹processes
+	        if(Loading.DEBUG && Loading.CPU_DEBUG)
+	        	Log.v(Loading.TAG, "procs_running:"+load);
 	        toks = load.split(" ");
 	        mProcs_running = Integer.parseInt(toks[1]);
 	        
-	        load = reader.readLine(); //procs_blocked -- °O¿ý·í¤U¦³¦h¤Öprocess³Qblock¦íµ¥«ÝI/OªA°È§¹¦¨
-	        if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "procs_blocked:"+load);
+	        load = reader.readLine(); //procs_blocked -- è¨˜éŒ„ç•¶ä¸‹æœ‰å¤šå°‘processè¢«blockä½ç­‰å¾…I/Oæœå‹™å®Œæˆ
+	        if(Loading.DEBUG && Loading.CPU_DEBUG)
+	        	Log.v(Loading.TAG, "procs_blocked:"+load);
 	        
 	        toks = load.split(" ");
 	        mProcs_blocked = Integer.parseInt(toks[1]);
-	        if(Loading.DEBUG && Loading.CPU_DEBUG)  Log.v(Loading.TAG, "-------------------------");
+	        if(Loading.DEBUG && Loading.CPU_DEBUG)
+	        	Log.v(Loading.TAG, "-------------------------");
 	        reader.close();
 	    } catch (IOException ex) {
 	        ex.printStackTrace();
@@ -135,77 +143,59 @@ public class ProcStat {
 	}
 
 	private long getIdle(String[] toks) {
-		return Long.parseLong(toks[5]);
+		long l = Long.parseLong(toks[5]);
+		if (mInitIdle!=0) {
+			return l;
+		} else {
+			mInitIdle = l;
+			return l;
+		}
+
 	}
 
 	private long getCpu(String[] toks) {
-		return Long.parseLong(toks[2]) + Long.parseLong(toks[3]) + Long.parseLong(toks[4])
+		long l = Long.parseLong(toks[2]) + Long.parseLong(toks[3]) + Long.parseLong(toks[4])
 	              + Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
+		if(Loading.DEBUG && Loading.CPU_DEBUG)
+			Log.v(Loading.TAG, 	Long.parseLong(toks[2]) +"+"+
+								Long.parseLong(toks[3]) +"+"+
+								Long.parseLong(toks[4]) +"+"+
+								Long.parseLong(toks[6]) +"+"+
+								Long.parseLong(toks[7]) +"+"+
+								Long.parseLong(toks[8])+" = " + String.valueOf(l));
+		if (mInitCpu!=0) {
+			return l;
+		} else {
+			mInitCpu = l;
+			return l;
+		}
 	}
 
-	protected void printCPU(boolean withValue){
-		String input = "CPU," + mLogTime ;
-		if (withValue) {
-			float u = (float) (mCurrCpu - mLastCpu) / ((mCurrCpu + mCurrIdle) - (mLastCpu + mLastIdle)) *100;
-	        input = "CPU," + mLogTime + "," + Math.round(u);
-		}
-		if(Loading.DEBUG && Loading.CPU_DEBUG) Log.v(Loading.TAG, "input: "+input);
-        wfile.write(input);
-
+	private int getUtil() {
+		float input = (mCurrCpu - mLastCpu)*100 /
+						((mCurrCpu + mCurrIdle) - (mLastCpu + mLastIdle)) ;
+		int result = Math.round(input) ; 
+		return result;
 	}
 
-	protected void printCtxt(boolean withValue){
-		String input = "CPU ctxt," + mLogTime;
-		if (withValue) {
-			input = "CPU ctxt," + mLogTime + "," + (mCurrCtxt-init_ctxt);
-		}
-		if(Loading.DEBUG && Loading.CPU_DEBUG) Log.v(Loading.TAG, "input: "+input+"("+mCurrCtxt+"-"+init_ctxt+")");
-		wfile.write(input);
-	}
-	protected void printProcesses(boolean withValue){
-		String input = "CPU Processes," + mLogTime;
-		if (withValue) {
-		    input = "CPU Processes," + mLogTime + "," + (mCurrProcesses);
-		}
-		if(Loading.DEBUG && Loading.CPU_DEBUG) Log.v(Loading.TAG, "input: "+input+"("+mCurrProcesses+"-"+init_processes+")");
-		wfile.write(input);
-	}
-	protected void printProcsRunning(boolean withValue){
-		String input = "CPU ProcsRunning," + mLogTime;
-		if (withValue) {
-		    input = "CPU ProcsRunning," + mLogTime + "," + mProcs_running;
-		}
-		if(Loading.DEBUG && Loading.CPU_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	
-	protected void printProcsBlocked(boolean withValue){
-		String input = "CPU ProcsBlocked," + mLogTime;
-		if (withValue) {
-		    input = "CPU ProcsBlocked," + mLogTime + "," + mProcs_blocked;
-		}
-		if(Loading.DEBUG && Loading.CPU_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	
+	private int getCtxt() { return mCurrCtxt-init_ctxt; }
+	private int getProcesses() { return mCurrProcesses; }
+	private int getProcsRunning() { return mProcs_running; }
+	private int getProcsBlocked() { return mProcs_blocked; 	}
 
-	public void printAll() {
-		int cur_log_time=((LoadingService) mContext).getTime(mCurrentTime);
-		while (cur_log_time-mLogTime>1) {
-			mLogTime++;
-			Log.i("LoadingService", "===="+mLogTime+"===");
-	    	printCPU(false);
-	    	printCtxt(false);
-	    	printProcesses(false);
-	    	printProcsBlocked(false);
-	    	printProcsRunning(false);
+	@Override
+	public String getValues(int index) {
+		if (index==CPU_ALL_INDEX) {
+			final int utilization = getUtil();
+			recordMaxMin(CPU_ALL_INDEX, utilization);
+			//recordMean(CPU_ALL_INDEX, u);
+			return String.valueOf(utilization);
 		}
-		mLogTime = cur_log_time;
-		Log.i("LoadingService", "===="+mLogTime+"===");
-    	printCPU(true);
-    	printCtxt(true);
-    	printProcesses(true);
-    	printProcsBlocked(true);
-    	printProcsRunning(true);
+		return null;
+	}
+	public String getMena() {
+		float input = (mCurrCpu - mInitCpu)*100 /
+				((mCurrCpu + mCurrIdle) - (mInitCpu + mInitIdle)) ;
+		return String.valueOf(Math.round(input));
 	}
 }

@@ -15,17 +15,11 @@ import android.widget.Toast;
 
 public class WriteFile2SD {
 
-	private Context mContext;
 	private String mFileName;
 	private FileWriter mFileWriter;
 
-	public WriteFile2SD(Context context, long fileName, String filename) {
-		mContext = context;
-		if (filename.equals(""))
-			mFileName = String.valueOf(fileName);
-		else 
-			mFileName = filename;
-
+	public WriteFile2SD(String filename) {
+		mFileName = filename;
 		try {
 			if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 				File loadingDirectory = new File(Environment.getExternalStorageDirectory()+"/Loading/");

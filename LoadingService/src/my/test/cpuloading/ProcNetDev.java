@@ -9,18 +9,13 @@ import android.content.Context;
 import android.net.TrafficStats;
 import android.util.Log;
 
-public class ProcNetDev {
-
-	private WriteFile2SD wfile;
-	private long mCurrentTime=0;
-	private int mLogTime=0;
+public class ProcNetDev extends BasicFunc {
 	private int READ_LINE= 0;
-	private Context mContext;
 /*
- *bytesªí¥Ü¦¬µoªº¦ì¤¸²Õ¼Æ
- *packetsªí¥Ü¦¬µo¥¿½Tªº¥]¶q
- *errsªí¥Ü¦¬µo¿ù»~ªº¥]¶q
- *dropªí¥Ü¦¬µo¥á±óªº¥]¶q
+ *bytesï¿½ï¿½Ü¦ï¿½ï¿½oï¿½ï¿½ï¿½ì¤¸ï¿½Õ¼ï¿½
+ *packetsï¿½ï¿½Ü¦ï¿½ï¿½oï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½]ï¿½q
+ *errsï¿½ï¿½Ü¦ï¿½ï¿½oï¿½ï¿½~ï¿½ï¿½ï¿½]ï¿½q
+ *dropï¿½ï¿½Ü¦ï¿½ï¿½oï¿½ï¿½óªº¥]ï¿½q
  *
  *====SAMSUNG S2====
  *Inter-|   Receive                                                |  Transmit
@@ -129,13 +124,10 @@ public class ProcNetDev {
 		mLaTranW0Drop = mCuTranW0Drop;
 	}
 	
-	public ProcNetDev(Context context, WriteFile2SD file, int line_num) {
-		mContext = context;
-		wfile = file;
+	public ProcNetDev(int line_num) {
 		READ_LINE= line_num;
 	}
-	protected void initProcNetDev(long ctime) {
-		mCurrentTime = ctime;
+	protected void dumpValues() {
 	    try {
 	    	moveValues();
 	    	
@@ -148,7 +140,7 @@ public class ProcNetDev {
 	        	if (Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, i+":"+load); 
 	        }
 	        if (load.length()>0) {
-		        result = ((LoadingService) mContext).dataPasing(load);
+		        result = dataPasing(load);
 		    	mCuReW0Bytes = Integer.parseInt(result.get(1));
 		    	mCuReW0Packets = Integer.parseInt(result.get(2));
 		    	mCuReW0Errs = Integer.parseInt(result.get(3));
@@ -173,145 +165,31 @@ public class ProcNetDev {
 	    	ex.printStackTrace();
 	    }
 	}
-
-	public void printAll() {
-		int cur_log_time=((LoadingService) mContext).getTime(mCurrentTime);
-
-		while (cur_log_time-mLogTime>1) {
-			mLogTime++;
-			printReceiveWlan0Bytes(false);
-			printReceiveWlan0Drop(false);
-			printReceiveWlan0Errs(false);
-			printReceiveWlan0Packets(false);
-	    	printTransmitWlan0Bytes(false);
-	    	printTransmitWlan0Drop(false);
-	    	printTransmitWlan0Errs(false);
-	    	printTransmitWlan0Packets(false);
+	private int getReceiveLOBytes() { return mReceiveLOBytes; }
+	private int getReceiveLOPackets() { return mReceiveLOPackets; }
+	private int getReceiveLOErrs() { return mReceiveLOErrs; }
+	private int getReceiveLODrop() { return mReceiveLODrop; }
+	private int getTransmitLOBytes() { return mTransmitLOBytes; }
+	private int getTransmitLOPackets() { return mTransmitLOPackets; }
+	private int getTransmitLOErrs() { return mTransmitLOErrs; }
+	private int getTransmitLODrop() { return mTransmitLODrop; }
+	private int getReceiveWlan0Bytes() { return mCuReW0Bytes-initReW0Bytes; }
+	private int getReceiveWlan0Packets() { return mCuReW0Packets-initReW0Packets; }
+	private int getReceiveWlan0Errs() { return mCuReW0Errs-initReW0Errs; }
+	private int getReceiveWlan0Drop() { return mCuReW0Drop-initReW0Drop; }
+	private int getTransmitWlan0Bytes() { return mCuTranW0Bytes-initTranW0Bytes; }
+	private int getTransmitWlan0Packets() { return mCuTranW0Packets-initTranW0Packets; }
+	private int getTransmitWlan0Errs() { return mCuTranW0Errs-initTranW0Errs; }
+	private int getTransmitWlan0Drop() { return mCuTranW0Drop-initTranW0Drop; }
+	@Override
+	protected String getValues(int index) {
+		if (index==NET_ALL_INDEX) {
+			final int net = getTransmitLOBytes()+getReceiveWlan0Bytes();
+			recordMaxMin(NET_ALL_INDEX, net);
+			recordMean(NET_ALL_INDEX, net);
+			return String.valueOf(net);
 		}
-		mLogTime = cur_log_time;
-    	printReceiveWlan0Bytes(true);
-    	printReceiveWlan0Drop(true);
-    	printReceiveWlan0Errs(true);
-    	printReceiveWlan0Packets(true);
-    	printTransmitWlan0Bytes(true);
-    	printTransmitWlan0Drop(true);
-    	printTransmitWlan0Errs(true);
-    	printTransmitWlan0Packets(true);
-		
+		return null;
 	}
-	/*
-	protected void printReceiveLOBytes(boolean withValue) {
-		String input = "REC LO Bytes," + mLogTime;
-		if (withValue) 
-			input = "REC LO Bytes," + mLogTime + "," + mReceiveLOBytes;
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	protected void printReceiveLOPackets(boolean withValue) {
-		String input = "REC LO Packets," + mLogTime;
-		if (withValue)
-			input = "REC LO Packets," + mLogTime + "," + mReceiveLOPackets;
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	protected void printReceiveLOErrs(boolean withValue) {
-		String input = "REC LO Errs," + mLogTime;
-		if (withValue)
-			input = "REC LO Errs," + mLogTime + "," + mReceiveLOErrs;
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	protected void printReceiveLODrop(boolean withValue) {
-		String input = "REC LO Drop," + mLogTime;
-		if (withValue)
-			input = "REC LO Drop," + mLogTime + "," + mReceiveLODrop;
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	protected void printTransmitLOBytes(boolean withValue) {
-		String input = "TRAS LO Bytes," + mLogTime;
-		if (withValue)
-			input = "TRAS LO Bytes," + mLogTime + "," + mTransmitLOBytes;
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	protected void printTransmitLOPackets(boolean withValue) {
-		String input = "TRAS LO Packets," + mLogTime;
-		if (withValue)
-			input = "TRAS LO Packets," + mLogTime + "," + mTransmitLOPackets;
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	protected void printTransmitLOErrs(boolean withValue) {
-		String input = "TRAS LO Errs," + mLogTime;
-		if (withValue)
-			input = "TRAS LO Errs," + mLogTime + "," + mTransmitLOErrs;
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	protected void printTransmitLODrop(boolean withValue) {
-		String input = "TRAS LO Drop," + mLogTime;
-		if (withValue)
-			input = "TRAS LO Drop," + mLogTime + "," + mTransmitLODrop;
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	*/
-	protected void printReceiveWlan0Bytes(boolean withValue) {
-		String input = "REC W0 Bytes," + mLogTime;
-		if (withValue)
-			input = "REC W0 Bytes," + mLogTime + "," + (mCuReW0Bytes-initReW0Bytes)/1024;
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input+ "("+mCuReW0Bytes+"-"+initReW0Bytes+")/1024");
-		wfile.write(input);
-	}
-	protected void printReceiveWlan0Packets(boolean withValue) {
-		String input = "REC W0 Packets," + mLogTime;
-		if (withValue)
-			input = "REC W0 Packets," + mLogTime + "," + (mCuReW0Packets-initReW0Packets);
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input+ "("+mCuReW0Packets+"-"+initReW0Packets+")");
-		wfile.write(input);
-	}
-	protected void printReceiveWlan0Errs(boolean withValue) {
-		String input = "REC W0 Errs," + mLogTime;
-		if (withValue)
-			input = "REC W0 Errs," + mLogTime + "," + (mCuReW0Errs-initReW0Errs);
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input+ "("+mCuReW0Errs+"-"+initReW0Errs+")");
-		wfile.write(input);
-	}
-	protected void printReceiveWlan0Drop(boolean withValue) {
-		String input = "REC W0 Drop," + mLogTime;
-		if (withValue)
-			input = "REC W0 Drop," + mLogTime + "," + (mCuReW0Drop-initReW0Drop);
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input+ "("+mCuReW0Drop+"-"+initReW0Drop+")");
-		wfile.write(input);
-	}
-	protected void printTransmitWlan0Bytes(boolean withValue) {
-		String input = "TRAS W0 Bytes," + mLogTime;
-		if (withValue)
-			input = "TRAS W0 Bytes," + mLogTime + "," + (mCuTranW0Bytes-initTranW0Bytes)/1024;
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input+ "("+mCuTranW0Bytes+"-"+initTranW0Bytes+")/1024");
-		wfile.write(input);
-	}
-	protected void printTransmitWlan0Packets(boolean withValue) {
-		String input = "TRAS W0 Packets," + mLogTime;
-		if (withValue)
-			input = "TRAS W0 Packets," + mLogTime + "," + (mCuTranW0Packets-initTranW0Packets);
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input+ "("+mCuTranW0Packets+"-"+initTranW0Packets+")");
-		wfile.write(input);
-	}
-	protected void printTransmitWlan0Errs(boolean withValue) {
-		String input = "TRAS W0 Errs," + mLogTime;
-		if (withValue)
-			input = "TRAS W0 Errs," + mLogTime + "," + (mCuTranW0Errs-initTranW0Errs);
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input+ "("+mCuTranW0Errs+"-"+initTranW0Errs+")");
-		wfile.write(input);
-	}
-	protected void printTransmitWlan0Drop(boolean withValue) {
-		String input = "TRAS W0 Drop," + mLogTime;
-		if (withValue)
-			input = "TRAS W0 Drop," + mLogTime + "," + (mCuTranW0Drop-initTranW0Drop);
-		if(Loading.DEBUG && Loading.NET_DEBUG) Log.v(Loading.TAG, "input: "+input+ "("+mCuTranW0Drop+"-"+initTranW0Drop+")");
-		wfile.write(input);
-	}
-
+	
 }

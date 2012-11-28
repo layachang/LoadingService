@@ -34,17 +34,19 @@ import android.widget.Toast;
 public class Loading extends Activity {
     /** Called when the activity is first created. */
 	public final static String TAG = "LoadingService";
-	public final static boolean DEBUG = false;
+	public final static boolean DEBUG = true;
 	
-	public final static boolean SERVICE_DEBUG = false;
-	public final static boolean W2SD_DEBUG = false;
+	public final static boolean SERVICE_DEBUG = true;
+	public final static boolean W2SD_DEBUG = true;
 	
 	public final static boolean CPU_DEBUG = false; //ProcState
-	public final static boolean MEM_DEBUG = true; //MemInfo
-	public final static boolean NET_DEBUG = true; //ProcNetDev
-	public final static boolean BATT_DEBUG = false; //BattInfoProc
+	public final static boolean CPU_PID_DEBUG = false; //ProcState
+	public final static boolean MEM_DEBUG = false; //MemInfo
+	public final static boolean MEM_PID_DEBUG = false; //MemInfo
 	public final static boolean DISK_DEBUG = true; //DiskState
-	public final static boolean BLUE_DEBUG = false; //Bluetooth
+	public final static boolean NET_DEBUG = true; //ProcNetDev
+	public final static boolean BATT_DEBUG = true; //BattInfoProc
+	public final static boolean BLUE_DEBUG = true; //Bluetooth
 	public final static boolean AUDIO_DEBUG = true; //Audio
 
 	/**Battery**/
@@ -66,9 +68,10 @@ public class Loading extends Activity {
 	
 	public static final int INFO_ID = 123456;
 	private final static int DEVICE_NUM_SAMSUNG_S2 = 1;
-	private final static int DEVICE_NUM_GALAXY_NOTE_10_1 = 2;
-	private final static int DEVICE_NUM_GALAXY_TAB_7_7 = 3;
-	private final static int DEVICE_NUM_PICASA_MF = 4;
+	private final static int DEVICE_NUM_GALAXY_NOTE_GTP6800 = 2;
+	private final static int DEVICE_NUM_GALAXY_NOTE_GTP6810 = 3;
+	private final static int DEVICE_NUM_GALAXY_TAB_7_7 = 4;
+	private final static int DEVICE_NUM_PICASA_MF = 5;
 
 	private String[] datasets = {"my.test.cpuloading",
 								 "com.vimeo.android.videoapp",
@@ -89,6 +92,7 @@ public class Loading extends Activity {
 	private RadioButton device2;
 	private RadioButton device3;
 	private RadioButton device4;
+	private RadioButton device5;
 	private TextView mStateString;
 	private Spinner mPSSpinner;
 	//private ArrayAdapter<String> lunchList;
@@ -105,8 +109,12 @@ public class Loading extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView();
+        setSharedPreferences();
+    }
+
+	private void setContentView() {
         setContentView(R.layout.main);
-        //mStateString = (TextView) findViewById(R.id.stateString);
         startButton = (Button) findViewById(R.id.startButton);
         stopButton = (Button) findViewById(R.id.stopButton);
         startButton.setOnClickListener(startClickListener);
@@ -115,55 +123,50 @@ public class Loading extends Activity {
         device2 = (RadioButton) findViewById(R.id.device2);
         device3 = (RadioButton) findViewById(R.id.device3);
         device4 = (RadioButton) findViewById(R.id.device4);
-        //spinner = (Spinner)findViewById(R.id.spinnner);
-        //lunchList = new ArrayAdapter<String>(Loading.this,android.R.layout.simple_spinner_item, lunch);
-        //lunchList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //spinner.setAdapter(lunchList);
-        
+        device5 = (RadioButton) findViewById(R.id.device5);
+        mFilenameFiled = (EditText)findViewById(R.id.filename);
+        mPSSpinner = (Spinner)findViewById(R.id.ps_spinnner);
+	}
+    private void setSharedPreferences() {
         SharedPreferences pref = getSharedPreferences("LOADING_DEVICE_NUMBER", 0);
         setCheckboutton(pref);
-        
-        
-        mFilenameFiled=(EditText)findViewById(R.id.filename);
-        mPSSpinner =(Spinner)findViewById(R.id.ps_spinnner);
-        
         //setListener(rdg,filename,spinnner);
-        RadioGroup rdg=(RadioGroup)findViewById(R.id.rdg1);
+        RadioGroup rdg = (RadioGroup)findViewById(R.id.rdg1);
         rdg.setOnCheckedChangeListener(
-        		new RadioGroup.OnCheckedChangeListener() {
+    		new RadioGroup.OnCheckedChangeListener() {
 
-					public void onCheckedChanged(RadioGroup group, final int checkedId) {
-						switch (checkedId) {
-							case R.id.device1:
-								memSetting(DEVICE_NUM_SAMSUNG_S2);
-								break;
-							case R.id.device2:
-								memSetting(DEVICE_NUM_GALAXY_NOTE_10_1);
-								break;
-							case R.id.device3:
-								memSetting(DEVICE_NUM_GALAXY_TAB_7_7);
-								break;
-							case R.id.device4:
-								memSetting(DEVICE_NUM_PICASA_MF);
-								break;
-						}
-						
+				public void onCheckedChanged(RadioGroup group, final int checkedId) {
+					switch (checkedId) {
+						case R.id.device1:
+							memSetting(DEVICE_NUM_SAMSUNG_S2);
+							break;
+						case R.id.device2:
+							memSetting(DEVICE_NUM_GALAXY_NOTE_GTP6800);
+							break;
+						case R.id.device3:
+							memSetting(DEVICE_NUM_GALAXY_NOTE_GTP6810);
+							break;
+						case R.id.device4:
+							memSetting(DEVICE_NUM_GALAXY_TAB_7_7);
+							break;
+						case R.id.device5:
+							memSetting(DEVICE_NUM_PICASA_MF);
+							break;
 					}
+					
+				}
 
-					private void memSetting(int device_num) {
-						SharedPreferences pref = getSharedPreferences("LOADING_DEVICE_NUMBER", device_num);
-						SharedPreferences.Editor PE = pref.edit();
-						PE.putInt("LOADING_DEVICE_NUMBER", device_num);
-						PE.commit();
-						loadSetting(device_num);
-					}
-        		});
-        
+				private void memSetting(int device_num) {
+					SharedPreferences pref = getSharedPreferences("LOADING_DEVICE_NUMBER", device_num);
+					SharedPreferences.Editor PE = pref.edit();
+					PE.putInt("LOADING_DEVICE_NUMBER", device_num);
+					PE.commit();
+					loadSetting(device_num);
+				}
+    		});
+	}
 
-        
-    }
-    
-    @Override
+	@Override
     public void onResume(){
     	super.onResume();
 
@@ -237,8 +240,9 @@ public class Loading extends Activity {
 	        	count++;
         	}
         }
-        String[] result = new String[count];
-        int idx=0;
+        String[] result = new String[count+1];
+        int idx=1;
+        result[0] = "Please Select application"; 
         for (String s : ps_str) {
         	if(s!=null) {
 	        	result[idx]=s;
@@ -352,14 +356,17 @@ public class Loading extends Activity {
 		case DEVICE_NUM_SAMSUNG_S2:
 			device1.setChecked(true);
 			break;
-		case DEVICE_NUM_GALAXY_NOTE_10_1:
+		case DEVICE_NUM_GALAXY_NOTE_GTP6800:
 			device2.setChecked(true);
 			break;
-		case DEVICE_NUM_GALAXY_TAB_7_7:
+		case DEVICE_NUM_GALAXY_NOTE_GTP6810:
 			device3.setChecked(true);
 			break;
-		case DEVICE_NUM_PICASA_MF:
+		case DEVICE_NUM_GALAXY_TAB_7_7:
 			device4.setChecked(true);
+			break;
+		case DEVICE_NUM_PICASA_MF:
+			device5.setChecked(true);
 			break;
 			default: break;
 		}
@@ -377,17 +384,19 @@ public class Loading extends Activity {
 			/*--/proc/stat--*/
 			setNUM_CPU(1);
 			break;
-		case DEVICE_NUM_GALAXY_NOTE_10_1:
+		case DEVICE_NUM_GALAXY_NOTE_GTP6800:
+			setREAD_LINE(10);
+			setKEY_CACHE("stl11");
+			setKEY_SYSTEM("stl9");
+			setKEY_DATA("mmcblk0p2");
+			setNUM_CPU(1);
+			break;
+		case DEVICE_NUM_GALAXY_NOTE_GTP6810:
 			setREAD_LINE(10);
 			setKEY_CACHE("mmcblk0p7");
 			setKEY_SYSTEM("mmcblk0p8");
 			setKEY_DATA("mmcblk0p9");
 			setNUM_CPU(1);
-			//setREAD_LINE(10);
-			//setKEY_CACHE("stl11");
-			//setKEY_SYSTEM("stl9");
-			//setKEY_DATA("mmcblk0p2");
-			//setNUM_CPU(1);
 			break;
 		case DEVICE_NUM_GALAXY_TAB_7_7:
 			setREAD_LINE(9);
@@ -424,9 +433,9 @@ public class Loading extends Activity {
     		Log.v(Loading.TAG,"!!!!!!!!!! startService !!!!!!!!!!");
     		startService(intent);
     		
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(Intent.ACTION_BATTERY_CHANGED);
-            registerReceiver(LoadingService.getBatInfoReceiver(), filter);
+            //IntentFilter filter = new IntentFilter();
+            //filter.addAction(Intent.ACTION_BATTERY_CHANGED);
+            //registerReceiver(LoadingService.getBatInfoReceiver(), filter);
     	}
 
     };
@@ -451,7 +460,8 @@ public class Loading extends Activity {
 		device1.setEnabled(true);
 		device2.setEnabled(true);
 		device3.setEnabled(true);
-
+		device4.setEnabled(true);
+		device5.setEnabled(true);
 	}
 
 	public String getKEY_CACHE() {

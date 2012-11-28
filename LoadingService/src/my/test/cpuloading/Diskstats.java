@@ -8,16 +8,50 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.util.Log;
 
-public class Diskstats {
+public class Diskstats extends BasicFunc {
 
-	private long mCurrentTime=0;
-	private int mLogTime=0;
 	private String KEY_CACHE = "";
 	private String KEY_SYSTEM = "";
 	private String KEY_DATA = "";
-	private Context mContext;
-	private WriteFile2SD wfile;
 /*
+ *	  1       0 ram0 0 0 0 0 0 0 0 0 0 0 0
+ *	  1       1 ram1 0 0 0 0 0 0 0 0 0 0 0
+ *	  1       2 ram2 0 0 0 0 0 0 0 0 0 0 0
+ *	  1       3 ram3 0 0 0 0 0 0 0 0 0 0 0
+ *	  1       4 ram4 0 0 0 0 0 0 0 0 0 0 0
+ *	  1       5 ram5 0 0 0 0 0 0 0 0 0 0 0
+ *	  1       6 ram6 0 0 0 0 0 0 0 0 0 0 0
+ *	  1       7 ram7 0 0 0 0 0 0 0 0 0 0 0
+ *	  1       8 ram8 0 0 0 0 0 0 0 0 0 0 0
+ *	  1       9 ram9 0 0 0 0 0 0 0 0 0 0 0
+ *	  1      10 ram10 0 0 0 0 0 0 0 0 0 0 0
+ *	  1      11 ram11 0 0 0 0 0 0 0 0 0 0 0
+ *	  1      12 ram12 0 0 0 0 0 0 0 0 0 0 0
+ *	  1      13 ram13 0 0 0 0 0 0 0 0 0 0 0
+ *	  1      14 ram14 0 0 0 0 0 0 0 0 0 0 0
+ *	  1      15 ram15 0 0 0 0 0 0 0 0 0 0 0
+ *	  7       0 loop0 0 0 0 0 0 0 0 0 0 0 0
+ *	  7       1 loop1 0 0 0 0 0 0 0 0 0 0 0
+ *	  7       2 loop2 0 0 0 0 0 0 0 0 0 0 0
+ *	  7       3 loop3 0 0 0 0 0 0 0 0 0 0 0
+ *	  7       4 loop4 0 0 0 0 0 0 0 0 0 0 0
+ *	  7       5 loop5 0 0 0 0 0 0 0 0 0 0 0
+ *	  7       6 loop6 0 0 0 0 0 0 0 0 0 0 0
+ *	  7       7 loop7 0 0 0 0 0 0 0 0 0 0 0
+ *	179       0 mmcblk0 6935 4544 652520 18645 11628 33428 360000 81815 0 43580 100370
+ *	179       1 mmcblk0p1 35 32 4474 65 84 68 1216 1205 0 880 1270
+ *	179       2 mmcblk0p2 0 0 0 0 0 0 0 0 0 0 0
+ *	179       3 mmcblk0p3 0 0 0 0 0 0 0 0 0 0 0
+ *	179       4 mmcblk0p4 22 105 1016 25 0 0 0 0 0 25 25
+ *	179       5 mmcblk0p5 0 0 0 0 0 0 0 0 0 0 0
+ *	179       6 mmcblk0p6 0 0 0 0 0 0 0 0 0 0 0
+ *	179       7 mmcblk0p7 11 64 618 10 11 11 176 430 0 235 440
+ *	179       8 mmcblk0p8 64 2554 20944 420 0 0 0 0 0 340 420
+ *	179       9 mmcblk0p9 6427 229 600850 16885 0 0 0 0 0 10290 16845
+ *	179      10 mmcblk0p10 366 1560 24538 1235 11473 33349 358608 80055 0 35780 81240
+ *	179      11 mmcblk0p11 0 0 0 0 0 0 0 0 0 0 0
+ *	179      12 mmcblk0p12 0 0 0 0 0 0 0 0 0 0 0
+ *
  *	Field 1 -- # of reads issued [3]
  *	Field 2 -- # of reads merged [4], field 6 -- # of writes merged [8]
  *	Field 3 -- # of sectors read [5]
@@ -58,15 +92,13 @@ public class Diskstats {
 	private int mWriteLastTime=-1;
 	private int mWriteAmount=0;
 
-	public Diskstats(Context context, WriteFile2SD file, String cache, String system, String data) {
-		mContext = context;
-		wfile = file;
+	public Diskstats(String cache, String system, String data) {
 		KEY_CACHE = cache;
 		KEY_SYSTEM = system;
 		KEY_DATA = data;
 	}
-	protected void initDiskstats(long ctime) {
-		mCurrentTime = ctime;
+
+	protected void dumpValues() {
 		ArrayList<String> result = null;
 		mCurrReadsIssued= mCurrReadsMerged= mCurrWriteMerged= mCurrSectorsRead= mCurrSectorsWrite=0;
 	    try {
@@ -74,12 +106,12 @@ public class Diskstats {
 	        for(;;){
 	            //moveValues();
 		        String load = reader.readLine();
-		        //if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "load: "+load); 
+		        if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "load: "+load); 
 		        if(load==null) {
 		        	reader.close();
 		        	break;
 		        }
-		        result = ((LoadingService) mContext).dataPasing(load);
+		        result = dataPasing(load);
 		        if (result.get(2).equals(KEY_CACHE) || 
 		                result.get(2).equals(KEY_SYSTEM) ||
 		                result.get(2).equals(KEY_DATA)) {
@@ -117,110 +149,52 @@ public class Diskstats {
         mCurrReadsIssued = mCurrReadsMerged = mCurrWriteMerged = mCurrSectorsRead = mCurrSectorsWrite = 0;
     }
     
-    protected void printReadsIssued(boolean withValue) {
-        String input = "FLASH READ ISSUED," + mLogTime;
-        if (withValue)
-        	input = "FLASH READ ISSUED," + mLogTime + ","+ (mCurrReadsIssued);
-        if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "input: "+input);
-        wfile.write(input);
+    private int getReadIssued() {
+    	return mCurrReadsIssued;
     }
-    
-    protected void printReadsMerged(boolean withValue) {
-        String input = "FLASH READ MERGED," + mLogTime;
-        if (withValue)
-        	input = "FLASH READ MERGED," + mLogTime + ","+ (mCurrReadsMerged);
-        if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "input: "+input);
-        wfile.write(input);
+    private int getReadReadMerged() {
+    	return mCurrReadsMerged;
     }
-    
-    protected void printWriteMerged(boolean withValue) {
-        String input = "FLASH WRITE MERGED," + mLogTime;
-        if (withValue)
-        	input = "FLASH WRITE MERGED," + mLogTime + ","+ (mCurrWriteMerged);
-        if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "input: "+input);
-        wfile.write(input);
+    private int getWriteMerged() {
+    	return mCurrWriteMerged;
     }
-    
-    protected void printSectorsRead(boolean withValue) {
+    private int getSectorsRead() {
     	if (mSectorReadLast==-1) {
     		mSectorReadLast = mCurrSectorsRead ;
     	}
     	int variation = mCurrSectorsRead-mSectorReadLast;
     	mSectorReadLast = mCurrSectorsRead ;
-    	String input = "3.1,FLASH SECTORS READ," + mLogTime + ","+ String.valueOf((variation));
-    	/*
-        String input = "3.1,FLASH SECTORS READ," + mLogTime;
-        if (withValue) {
-        	input = "3.1,FLASH SECTORS READ," + mLogTime + ","+ String.valueOf((variation));
-        }
-        */
-        if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "input: "+input);
-        wfile.write(input);
-        meanReadValue(withValue,variation);
+    	return variation;
     }
-    
-    protected void printSectorsWrite(boolean withValue) {
+    private int getSectorsWrite() {
     	if (mSectorWriteLast==-1) {
-    		mSectorWriteLast = mCurrSectorsRead ;
+    		mSectorWriteLast = mCurrSectorsWrite ;
     	}
-    	int variation = mCurrSectorsRead-mSectorWriteLast;
-    	mSectorWriteLast = mCurrSectorsRead ;
-    	String input = "3.2,FLASH SECTORS WRITE," + mLogTime + ","+ String.valueOf((variation));
-    	/*
-        String input = "3.2,FLASH SECTORS WRITE," + mLogTime;
-        if (withValue)
-        	input = "3.2,FLASH SECTORS WRITE," + mLogTime + ","+ (mCurrSectorsWrite);
-        */
-        if(Loading.DEBUG && Loading.DISK_DEBUG) Log.v(Loading.TAG, "input: "+input);
-        wfile.write(input);
-        meanWriteValue(withValue,variation);
+    	int variation = mCurrSectorsWrite - mSectorWriteLast;
+    	mSectorWriteLast = mCurrSectorsWrite ;
+    	return variation;
     }
-    
-    public void printAll() {
-		int cur_log_time=((LoadingService) mContext).getTime(mCurrentTime);
-
-		while (cur_log_time-mLogTime>1) {
-			mLogTime++;
-			//printReadsIssued(false);
-			//printReadsMerged(false);
-			//printWriteMerged(false);
-			printSectorsRead(false);
-			printSectorsWrite(false);
+    protected int printSectorsRead() {
+    	if (mSectorReadLast==-1) {
+    		mSectorReadLast = mCurrSectorsRead;
+    	}
+    	int variation = mCurrSectorsRead - mSectorReadLast;
+    	mSectorReadLast = mCurrSectorsRead ;
+    	return variation;
+    }
+ 
+    protected String getValues(int index){
+		if (index==DISK_READ_INDEX) {
+			final int read = getSectorsRead();
+			recordMaxMin(DISK_READ_INDEX, read);
+			recordMean(DISK_READ_INDEX, read);
+			return String.valueOf(read);
+		} else if (index==DISK_WRITE_INDEX) {
+			final int write = getSectorsRead();
+			recordMaxMin(DISK_WRITE_INDEX, write);
+			recordMean(DISK_WRITE_INDEX, write);
+			return String.valueOf(write);
 		}
-		mLogTime = cur_log_time;
-        //printReadsIssued(true);
-        //printReadsMerged(true);
-        //printWriteMerged(true);
-        printSectorsRead(true);
-        printSectorsWrite(true);
-    }
-    
-	private void meanReadValue(boolean withValue, int variation) {
-		// TODO Auto-generated method stub
-        if (mReadInitTime==-1 && withValue) {
-        	mReadInitTime = mLogTime;
-        }
-        mReadLastTime = mLogTime;
-        mReadAmount +=variation;
-	}
-	public void printReadMean(){
-		if(Loading.DEBUG && Loading.DISK_DEBUG) 
-			Log.v(Loading.TAG, "mReadAmount= "+mReadAmount+"; mReadLastTime="+mReadLastTime+"; mReadInitTime="+mReadInitTime);
-		String input = "3.1,FLASH SECTORS READ, mean," + (float)mReadAmount/(float)(mReadLastTime-mReadInitTime+1);
-		wfile.write(input);
-	}
-	private void meanWriteValue(boolean withValue, int variation) {
-		// TODO Auto-generated method stub
-        if (mWriteInitTime==-1 && withValue) {
-        	mWriteInitTime = mLogTime;
-        }
-        mWriteLastTime = mLogTime;
-        mWriteAmount +=variation;
-	}
-	public void printWriteMean(){
-		if(Loading.DEBUG && Loading.DISK_DEBUG) 
-			Log.v(Loading.TAG, "mWriteAmount= "+mWriteAmount+"; mWriteLastTime="+mWriteLastTime+"; mWriteInitTime="+mWriteInitTime);
-		String input = "3.2,FLASH SECTORS WRITE, mean," + (float)mWriteAmount/(float)(mWriteLastTime-mWriteInitTime+1);
-		wfile.write(input);
+		return null;
 	}
 }

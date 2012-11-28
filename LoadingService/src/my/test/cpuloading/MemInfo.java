@@ -8,11 +8,7 @@ import java.util.HashMap;
 import android.content.Context;
 import android.util.Log;
 
-public class MemInfo {
-	private long mStartTime=0;
-	private long mCurrentTime=0;
-	private int mLogTime=0;
-	private Context mContext;
+public class MemInfo extends BasicFunc {
 
 /*
  * MemTotal:         850532 kB
@@ -55,21 +51,11 @@ public class MemInfo {
  */
 	HashMap<String,Integer> mData = new HashMap<String,Integer>();
 	
-	private WriteFile2SD wfile;
-
 	private int mInitTime = -1;
 	private int mLastTime = -1;
-	private float mAmount = 0;
 
-	public MemInfo(Context context, WriteFile2SD file) {
-		mContext = context;
-		wfile = file; 
-	}
-
-	protected void initProcMeminfo(long ctime) {
-		mCurrentTime = ctime;
+	protected void dumpValues() {
 		ArrayList<String> result = null;
-        
 	    try {
 	        RandomAccessFile reader = new RandomAccessFile(Loading.STR_MEM_MEMINFO, "r");
 	        for(;;){
@@ -78,7 +64,7 @@ public class MemInfo {
 		        	reader.close();
 		        	break;
 		        }
-		        result = ((LoadingService) mContext).dataPasing(load);
+		        result = dataPasing(load);
 		        if(Loading.DEBUG && Loading.MEM_DEBUG) Log.v(Loading.TAG, "load: "+load);
 		        String key = result.get(0).replace(":", "");
 		        mData.put(key, Integer.parseInt(result.get(1)));
@@ -91,50 +77,25 @@ public class MemInfo {
 	    }
 	}
 
-	protected void printMemUsed(boolean withValue) {
-		String input = "MEM USED,"+mLogTime;
-		if(withValue)
-		    input = "MEM USED,"+mLogTime+","+(mData.get("MemTotal")-mData.get("MemFree"));
-		if(Loading.DEBUG && Loading.MEM_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
+	private int getMemUsed() {
+		return Math.round(
+				(mData.get("MemTotal")-mData.get("MemFree"))*100 / mData.get("MemTotal")
+				);
 	}
-	
-	protected void printMemBuffers(boolean withValue) {
-		String input = "MEM Buffers,"+mLogTime;
-		if(withValue)
-		    input = "MEM Buffers,"+mLogTime+","+mData.get("Buffers");
-		if(Loading.DEBUG && Loading.MEM_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	protected void printMemCached(boolean withValue) {
-		String input = "MEM Cached,"+mLogTime;
-		if(withValue)
-		    input = "MEM Cached,"+mLogTime+","+mData.get("Cached");
-		if(Loading.DEBUG && Loading.MEM_DEBUG) Log.v(Loading.TAG, "input: "+input);
-		wfile.write(input);
-	}
-	
-	public void printAll() {
-		int cur_log_time=((LoadingService) mContext).getTime(mCurrentTime);
 
-		while (cur_log_time-mLogTime>1) {
-			mLogTime++;
-			printMemUsed(false);
-			printMemBuffers(false);
-			printMemCached(false);
-		}
-		mLogTime = cur_log_time;
-    	printMemUsed(true);
-    	printMemBuffers(true);
-    	printMemCached(true);
-	}
+	private int getMemBuffers() { return mData.get("Buffers"); }
 	
-	private void meanValue(boolean withValue, float cpu) {
-		// TODO Auto-generated method stub
-        if (mInitTime==-1&&withValue) {
-        	mInitTime = mLogTime;
-        }
-        mLastTime = mLogTime;
-        mAmount +=cpu;
+	private int getMemCached() { return mData.get("Cached"); }
+
+	@Override
+	protected String getValues(int index) {
+		if (index==MEM_ALL_INDEX) {
+			final int used = getMemUsed();
+			recordMaxMin(MEM_ALL_INDEX, used);
+			recordMean(MEM_ALL_INDEX, used);
+			return String.valueOf(used);
+		}
+		return null;
 	}
+
 }
