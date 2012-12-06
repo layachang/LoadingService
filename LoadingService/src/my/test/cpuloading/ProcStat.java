@@ -63,7 +63,6 @@ public class ProcStat extends BasicFunc {
 	    try {
 	    	boolean isIntrLoad = false;
 	    	moveValues();
-	    	
 	        RandomAccessFile reader = new RandomAccessFile(Loading.STR_CPU_STAT, "r");
 	        if(Loading.DEBUG && Loading.CPU_DEBUG)
 	        	Log.v(Loading.TAG, "--"+Loading.STR_CPU_STAT+"--");
@@ -197,6 +196,10 @@ public class ProcStat extends BasicFunc {
 	public String getMena() {
 		float input = (mCurrCpu - mInitCpu)*100 /
 				((mCurrCpu + mCurrIdle) - (mInitCpu + mInitIdle)) ;
+		if(Loading.DEBUG && Loading.AMOUNT_MEAN)
+		Log.v(Loading.TAG,
+					"input:"+input+", ("+mCurrCpu+"-"+mInitCpu+")*100 / " +
+							"(("+mCurrCpu+"-"+mCurrIdle+")-("+mInitCpu+" + "+mInitIdle+"))");
 		return String.valueOf(Math.round(input));
 	}
 }

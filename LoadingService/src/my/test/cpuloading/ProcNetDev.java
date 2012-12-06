@@ -101,6 +101,9 @@ public class ProcNetDev extends BasicFunc {
 	private int mCuTranW0Packets=-1;
 	private int mCuTranW0Errs=-1;
 	private int mCuTranW0Drop=-1;
+	
+	private int mVarReW0Bytes;
+	private int mVarTranW0Bytes;
 
 	public ProcNetDev(int line_num) {
 		READ_LINE= line_num;
@@ -159,14 +162,16 @@ public class ProcNetDev extends BasicFunc {
 		    		Log.v(Loading.TAG, "mCuReW0Errs: "+mCuReW0Errs+"; mCuTranW0Errs="+mCuTranW0Errs); 
 		    		Log.v(Loading.TAG, "mCuReW0Drop: "+mCuReW0Drop+"; mCuTranW0Drop="+mCuTranW0Drop); 
 		    	}
-		    	if (initReW0Bytes==-1) initReW0Bytes = mCuReW0Bytes;
+
 		    	if (initReW0Packets==-1) initReW0Packets = mCuReW0Packets;
 		    	if (initReW0Errs==-1) initReW0Errs = mCuReW0Errs;
 		    	if (initReW0Drop==-1) initReW0Drop = mCuReW0Drop;
-		    	if (initTranW0Bytes==-1) initTranW0Bytes = mCuTranW0Bytes;
 		    	if (initTranW0Packets==-1) initTranW0Packets = mCuTranW0Packets;
 		    	if (initTranW0Errs==-1) initTranW0Errs = mCuTranW0Errs;
 		    	if (initTranW0Drop==-1) initTranW0Drop = mCuTranW0Drop;
+
+		    	if (initReW0Bytes==-1) initReW0Bytes = mCuReW0Bytes;
+		    	if (initTranW0Bytes==-1) initTranW0Bytes = mCuTranW0Bytes;
 	        }
 	        reader.close();
 	    } catch (IOException ex) {
@@ -181,23 +186,48 @@ public class ProcNetDev extends BasicFunc {
 	private int getTransmitLOPackets() { return mTransmitLOPackets; }
 	private int getTransmitLOErrs() { return mTransmitLOErrs; }
 	private int getTransmitLODrop() { return mTransmitLODrop; }
-	private int getReceiveWlan0Bytes() { return mCuReW0Bytes-initReW0Bytes; }
 	private int getReceiveWlan0Packets() { return mCuReW0Packets-initReW0Packets; }
 	private int getReceiveWlan0Errs() { return mCuReW0Errs-initReW0Errs; }
 	private int getReceiveWlan0Drop() { return mCuReW0Drop-initReW0Drop; }
-	private int getTransmitWlan0Bytes() { return mCuTranW0Bytes-initTranW0Bytes; }
 	private int getTransmitWlan0Packets() { return mCuTranW0Packets-initTranW0Packets; }
 	private int getTransmitWlan0Errs() { return mCuTranW0Errs-initTranW0Errs; }
 	private int getTransmitWlan0Drop() { return mCuTranW0Drop-initTranW0Drop; }
+
+	private int getReceiveWlan0Bytes() {
+		if (mLaReW0Bytes==-1) {
+			mLaReW0Bytes = mCuReW0Bytes;
+		}
+		mVarReW0Bytes = mCuReW0Bytes - mLaReW0Bytes;
+    	if(Loading.DEBUG && Loading.NET_DEBUG)
+    		Log.v(Loading.TAG,
+    			"getReceiveWlan0Bytes: "+mVarReW0Bytes+" = "+mCuReW0Bytes+" - "+mLaReW0Bytes);
+		return mVarReW0Bytes;
+	}
+	private int getTransmitWlan0Bytes() {
+		if (mLaTranW0Bytes==-1) {
+			mLaTranW0Bytes = mCuTranW0Bytes;
+		}
+		mVarTranW0Bytes = mCuTranW0Bytes - mLaTranW0Bytes;
+    	if(Loading.DEBUG && Loading.NET_DEBUG)
+    		Log.v(Loading.TAG,
+    			"getTransmitWlan0Bytes: "+mVarTranW0Bytes+" = "+mCuTranW0Bytes+" - "+mLaTranW0Bytes);
+		return mVarTranW0Bytes;
+	}
 	@Override
 	protected String getValues(int index) {
 		if (index==NET_ALL_INDEX) {
-			final int net = getTransmitLOBytes()+getReceiveWlan0Bytes();
-			recordMaxMin(NET_ALL_INDEX, net);
-			recordMean(NET_ALL_INDEX, net);
-			return String.valueOf(net);
+			final int total = getTransmitWlan0Bytes()+getReceiveWlan0Bytes();
+			recordMaxMin(NET_ALL_INDEX, total);
+
+			return String.valueOf(total);
 		}
 		return null;
 	}
-	
+	public int getAmount() {
+		int result = (mCuReW0Bytes-initReW0Bytes) - (mCuTranW0Bytes-initTranW0Bytes);
+		if(Loading.DEBUG && Loading.AMOUNT_MEAN)
+			Log.v(Loading.TAG,
+						"result:"+result+", ("+mCuReW0Bytes+"-"+initReW0Bytes+") - ("+mCuTranW0Bytes+"-"+initTranW0Bytes+")");
+		return result;
+	}
 }

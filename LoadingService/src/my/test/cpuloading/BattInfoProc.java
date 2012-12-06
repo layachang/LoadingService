@@ -1,5 +1,6 @@
 package my.test.cpuloading;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -9,13 +10,13 @@ import android.util.Log;
 
 public class BattInfoProc extends BasicFunc {
 
-	private int mBattCurrentNow;
-	private int mBattVol;
-	private int mCapacity;
-	private int mVoltageNow;
-	private int mTemp;
-	private int mCurrentNow;
-	private int mW;
+	private int mBattCurrentNow = 0;
+	private int mBattVol = 0;
+	private int mCapacity = 0;
+	private int mVoltageNow = 0;
+	private int mTemp = 0;
+	private int mCurrentNow = 0;
+	private int mW = 0;
 	
 	public final static String STR_BATT_BATT_CURRENT_NOW = "/sys/class/power_supply/battery/batt_current_now"; //500
 	public final static String STR_BATT_BATT_VOL = "/sys/class/power_supply/battery/batt_vol"; //4163 = 4163 mV
@@ -32,6 +33,8 @@ public class BattInfoProc extends BasicFunc {
 	        if(Loading.DEBUG && Loading.BATT_DEBUG)
 	        	Log.v(Loading.TAG,"batt_vol:"+load+"("+mBattVol+")");
 	        reader.close();
+	    } catch (FileNotFoundException fx) {
+	    	
 	    } catch (IOException ex) {
 	    	ex.printStackTrace();
 	    }
@@ -43,6 +46,8 @@ public class BattInfoProc extends BasicFunc {
 	        if(Loading.DEBUG && Loading.BATT_DEBUG)
 	        	Log.v(Loading.TAG,"capacity:"+load+"("+mCapacity+")");
 	        reader.close();
+	    } catch (FileNotFoundException fx) {
+	    	
 	    } catch (IOException ex) {
 	    	ex.printStackTrace();
 	    }
@@ -54,6 +59,8 @@ public class BattInfoProc extends BasicFunc {
 	        if(Loading.DEBUG && Loading.BATT_DEBUG)
 	        	Log.v(Loading.TAG,"voltage_now:"+load+"("+mVoltageNow+")");
 	        reader.close();
+	    } catch (FileNotFoundException fx) {
+	    	
 	    } catch (IOException ex) {
 	    	ex.printStackTrace();
 	    }
@@ -64,6 +71,8 @@ public class BattInfoProc extends BasicFunc {
 	        if(Loading.DEBUG && Loading.BATT_DEBUG)
 	        	Log.v(Loading.TAG,"temp:"+load+"("+mTemp+")");
 	        reader.close();
+	    } catch (FileNotFoundException fx) {
+	    	
 	    } catch (IOException ex) {
 	    	ex.printStackTrace();
 	    }
@@ -74,6 +83,8 @@ public class BattInfoProc extends BasicFunc {
 	        mCurrentNow = Integer.parseInt(load);
 	        if(Loading.DEBUG && Loading.BATT_DEBUG) Log.v(Loading.TAG,"current_now:"+load+"("+mCurrentNow+")");
 	        reader.close();
+	    } catch (FileNotFoundException fx) {
+	    	
 	    } catch (IOException ex) {
 	    	ex.printStackTrace();
 	    }

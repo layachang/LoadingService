@@ -9,6 +9,11 @@ public class NetStats  extends BasicFunc {
 	private static long mTx;
 	private long mRxLast=-1;
 	private long mTxLast=-1;
+	private long mRxCurr=-1;
+	private long mTxCurr=-1;
+	private int mRxVar=-1;
+	private int mTxVar=-1;
+
 	private int mRxInitTime=-1;
 	private int mRxLastTime=-1;
 	private int mRxAmount=0;
@@ -17,48 +22,45 @@ public class NetStats  extends BasicFunc {
 	private int mTxAmount=0;
 	
 	public NetStats(int uid) {
+        if(Loading.DEBUG && Loading.NET_UID_DEBUG)
+        	Log.v(Loading.TAG, "NetStats, mUID--"+uid);
 		mUID = uid;
 	}
 	@Override
 	protected void dumpValues() {
-		final long r = TrafficStats.getUidRxBytes(mUID);
-		final long t = TrafficStats.getUidTxBytes(mUID);
-		
-    	if (mRxLast==-1) { mRxLast = r ; }
-    	if (mTxLast==-1) { mTxLast = t ; }
-    
-    	mRx= (int) (r-mRxLast);
-    	mTx = (int) (t-mTxLast);
-    	mRxLast = r ;
-    	mTxLast = t ;
+		mRxCurr = TrafficStats.getUidRxBytes(mUID);
+		mTxCurr = TrafficStats.getUidTxBytes(mUID);
+        if(Loading.DEBUG && Loading.NET_UID_DEBUG)
+        	Log.v(Loading.TAG, "mRxCurr="+mRxCurr+"; mTxCurr="+mTxCurr);
 	}
 	
 	private int getRx(){
-		final long r = TrafficStats.getUidRxBytes(mUID);
     	if (mRxLast==-1) {
-    		mRxLast = r ;
+    		mRxLast = mRxCurr ;
     	}
-    	int variation = (int) (r-mRxLast);
-    	mRxLast = r ;
-    	return variation;
+    	mRxVar = (int) (mRxCurr-mRxLast);
+        if(Loading.DEBUG && Loading.NET_UID_DEBUG)
+        	Log.v(Loading.TAG, mRxVar+" = (int) ("+mRxCurr+"-"+mRxLast+")");
+    	mRxLast = mRxCurr ;
+    	return mRxVar;
 	}
-
 	private int getTx(){
-		final long t = TrafficStats.getUidTxBytes(mUID);
     	if (mTxLast==-1) {
-    		mTxLast = t ;
+    		mTxLast = mTxCurr ;
     	}
-    	int variation = (int) (t-mTxLast);
-    	mTxLast = t ;
-    	return variation;
+    	mTxVar = (int) (mTxCurr-mTxLast);
+        if(Loading.DEBUG && Loading.NET_UID_DEBUG)
+        	Log.v(Loading.TAG, mTxVar+" = (int) ("+mTxCurr+"-"+mTxLast+")");
+    	mTxLast = mTxCurr ;
+    	return mTxVar;
 	}
-
+	
 	@Override
 	protected String getValues(int index) {
 		if (index==NET_UID_INDEX) {
 			final int total = getTx()+getRx();
 			recordMaxMin(NET_UID_INDEX, total);
-			recordMean(NET_UID_INDEX, total);
+			//recordMean(NET_UID_INDEX, total);
 			return String.valueOf(total);
 		}
 		return null;

@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.BatteryManager;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -34,6 +35,7 @@ public class LoadingService extends Service  {
 	private static WriteFile2SD wfile;
 
 	private ProcStat mCpuAll;
+	private SysCpuLoad mCpuAll15;
 	private DumpCPU mCpuPid;
 	private MemInfo mMemAll;
 	private DumpMEM mMemPid;
@@ -52,7 +54,7 @@ public class LoadingService extends Service  {
     	final int pid = mPID;
     	final int uid = mUID;
 
-	    Log.v(Loading.TAG,"!!!!!!!!!! onStart !!!!!!!!!!");
+	    Log.v(Loading.TAG,"!!!!!!!!!! onStart !!!!!!!!!!VERSION.SDK_INT="+VERSION.SDK_INT);
         handler.postDelayed(catchData, 800);
 
         wfile = new WriteFile2SD(mFileName);
@@ -63,9 +65,9 @@ public class LoadingService extends Service  {
         mMemPid = new DumpMEM(pid);
         mDiskAll = new Diskstats(KEY_CACHE, KEY_SYSTEM, KEY_DATA, KEY_FILESYSTEM);
         mNetAll = new ProcNetDev(READ_LINE);
-        //mNetUid = new NetStats(uid);
-        //mBattAll = new BattInfoProc();
-        //mVolAll = new VisualizerLinster();
+        mNetUid = new NetStats(uid);
+        mBattAll = new BattInfoProc();
+        mVolAll = new VisualizerLinster();
 	}
     
     private void handleCommand(Intent intent) {
@@ -90,7 +92,7 @@ public class LoadingService extends Service  {
 	@Override
     public void onDestroy() {
 		//print mean value
-		//mVolAll.destory();
+		mVolAll.destory();
 		handler.removeCallbacks(catchData);
         if(wfile!=null) {
         	wfile.close();
@@ -105,7 +107,7 @@ public class LoadingService extends Service  {
             //log�ثe�ɶ�
             dumpValues();
             printValues();
-            handler.postDelayed(this, 800);
+            handler.postDelayed(this, 300);
         }
     };
 
@@ -113,7 +115,7 @@ public class LoadingService extends Service  {
     	if (mFirst) {
     		mStartTime = System.currentTimeMillis();
             //printProcCpuinfo();
-            mCpuAll.dumpValues();       //CPU
+    		mCpuAll.dumpValues();   	//CPU
             mMemAll.dumpValues();      	//MEM
         	mDiskAll.dumpValues();      //Flash
             mNetAll.dumpValues();    	//Network
@@ -127,8 +129,9 @@ public class LoadingService extends Service  {
         	mMemPid.dumpValues();
         	mDiskAll.dumpValues();
         	mNetAll.dumpValues();
-        	//mNetUid.dumpValues();
-        	//mBattAll.dumpValues();
+        	mNetUid.dumpValues();
+        	mBattAll.dumpValues();
+        	mVolAll.dumpValues();
         }
 	}
 
@@ -138,6 +141,7 @@ public class LoadingService extends Service  {
 			mFirst = false;
 			StringBuffer input = new StringBuffer();
 			input.append(",CPU ALL,CPU PID,MEM ALL, MEM PID,DISK ALL,DISK READ,DISK WRITE,NET ALL, NET UID,BATT,AUDIO ");
+			wfile.write(input.toString());
 			return;
 		}
 		long currTime = System.currentTimeMillis();
@@ -151,9 +155,9 @@ public class LoadingService extends Service  {
 		input.append(mDiskAll.getValues(BasicFunc.DISK_READ_INDEX)); input.append(",");
 		input.append(mDiskAll.getValues(BasicFunc.DISK_WRITE_INDEX)); input.append(",");
 		input.append(mNetAll.getValues(BasicFunc.NET_ALL_INDEX)); input.append(",");
-		//input.append(mNetUid.getValues(BasicFunc.NET_UID_INDEX)); input.append(",");
-		//input.append(mBattAll.getValues(BasicFunc.BATT_ALL_INDEX)); input.append(",");
-		//input.append(mVolAll.getValues(BasicFunc.AUDIO_ALL_INDEX)); input.append(",");
+		input.append(mNetUid.getValues(BasicFunc.NET_UID_INDEX)); input.append(",-");
+		input.append(mBattAll.getValues(BasicFunc.BATT_ALL_INDEX)); input.append(",");
+		input.append(mVolAll.getValues(BasicFunc.AUDIO_ALL_INDEX)); input.append(",");
 
 		wfile.write(input.toString());
 	}
@@ -184,5 +188,27 @@ public class LoadingService extends Service  {
 	public IBinder onBind(Intent arg0) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	private class CpuAll {
+		private Object mMatchObject;
+		public CpuAll(int pid, int uid, int cpu_num) {
+			if (VERSION.SDK_INT!=15)
+				mMatchObject = new ProcStat(pid,uid,cpu_num);
+			else
+				mMatchObject = new SysCpuLoad();
+		}
+		public void dumpValues(){
+			if (VERSION.SDK_INT!=15)
+				((ProcStat)mMatchObject).dumpValues();
+			else
+				((SysCpuLoad)mMatchObject).dumpValues();
+		}
+		public String getValues(int index) {
+			if (VERSION.SDK_INT!=15)
+				return ((ProcStat)mMatchObject).getValues(index);
+			else
+				return ((SysCpuLoad)mMatchObject).getValues(index);
+		}
 	}
 }

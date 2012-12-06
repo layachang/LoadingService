@@ -45,9 +45,14 @@ public class Loading extends Activity {
 	public final static boolean MEM_PID_DEBUG = false; //MemInfo
 	public final static boolean DISK_DEBUG = false; //DiskState
 	public final static boolean NET_DEBUG = false; //ProcNetDev
-	public final static boolean BATT_DEBUG = true; //BattInfoProc
-	public final static boolean BLUE_DEBUG = true; //Bluetooth
-	public final static boolean AUDIO_DEBUG = true; //Audio
+	public final static boolean NET_UID_DEBUG = false; //ProcNetDev
+	public final static boolean BATT_DEBUG = false; //BattInfoProc
+	public final static boolean BLUE_DEBUG = false; //Bluetooth
+	public final static boolean AUDIO_DEBUG = false; //Audio
+	public final static boolean AMOUNT_MEAN = true; //Amount
+	public final static boolean MAX = true; //MAX
+	public final static boolean MIN = true; //MIN
+	public final static boolean VARIANCE = true; //VARIANCE
 
 	/**Battery**/
 	public final static String STR_BATT_BATT_CURRENT_NOW = "/sys/class/power_supply/battery/batt_current_now"; //500
@@ -397,11 +402,11 @@ public class Loading extends Activity {
 			setKEY_FILESYSTEM(4);
 			break;
 		case DEVICE_NUM_GALAXY_NOTE_GTP6810:
-			setREAD_LINE(10);
+			setREAD_LINE(6);
 			setKEY_CACHE("mmcblk0p7");
 			setKEY_SYSTEM("mmcblk0p8");
 			setKEY_DATA("mmcblk0p9");
-			setNUM_CPU(1);
+			setNUM_CPU(2);
 			break;
 		case DEVICE_NUM_GALAXY_TAB_7_7:
 			setREAD_LINE(9);
