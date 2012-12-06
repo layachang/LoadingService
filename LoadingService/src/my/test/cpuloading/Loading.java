@@ -50,8 +50,7 @@ public class Loading extends Activity {
 	public final static boolean BLUE_DEBUG = false; //Bluetooth
 	public final static boolean AUDIO_DEBUG = false; //Audio
 	public final static boolean AMOUNT_MEAN = true; //Amount
-	public final static boolean MAX = true; //MAX
-	public final static boolean MIN = true; //MIN
+	public final static boolean MAX_MIN = false; //MAX MIN
 	public final static boolean VARIANCE = true; //VARIANCE
 
 	/**Battery**/

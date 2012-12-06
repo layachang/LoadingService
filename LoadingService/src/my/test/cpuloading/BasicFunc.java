@@ -87,13 +87,19 @@ public abstract class BasicFunc {
 	
 	protected void recordMaxMin(int index, int value) {
 		if (mMax.get(index)==null && mMin.get(index)==null) {
+			if(Loading.DEBUG && Loading.AMOUNT_MEAN)
+				Log.v(Loading.TAG,"index["+index+"], MAX("+value+") ,MIN("+value+")");
 			mMax.put(index, value);
 			mMin.put(index, value);
 		}
 		if (value > mMax.get(index)) {
+			if(Loading.DEBUG && Loading.AMOUNT_MEAN)
+				Log.v(Loading.TAG,"index["+index+"], MAX("+value+")");
 			mMax.put(index,value);
 		}
 		if (value < mMin.get(index)) {
+			if(Loading.DEBUG && Loading.AMOUNT_MEAN)
+				Log.v(Loading.TAG,"index["+index+"], MIN("+value+")");
 			mMin.put(index,value);
 		}
 	}
