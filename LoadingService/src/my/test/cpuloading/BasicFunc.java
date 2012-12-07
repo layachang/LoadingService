@@ -106,13 +106,13 @@ public abstract class BasicFunc {
 
 	protected void recordMean(int index, int value) {
 		if (mCount.get(index)!=null && mCount.get(index)!=0) {
-			if(Loading.DEBUG && Loading.CPU_PID_DEBUG) {
+			if(Loading.DEBUG && Loading.AMOUNT_MEAN) {
 				Log.v(Loading.TAG,"mAmountInt.put("+index+", "+mAmountInt.get(index)+"+"+value);
 			}
 			mAmountInt.put(index, mAmountInt.get(index)+value);
             mCount.put(index, mCount.get(index)+1);
 		} else {
-			if(Loading.DEBUG && Loading.CPU_PID_DEBUG) {
+			if(Loading.DEBUG && Loading.AMOUNT_MEAN) {
 				Log.v(Loading.TAG,"mAmountInt.put("+index+", "+value);
 			}
 	        mAmountInt.put(index, value);
@@ -137,6 +137,8 @@ public abstract class BasicFunc {
 	}
 
 	protected String getMean(int index) {
+		if(Loading.DEBUG && Loading.AMOUNT_MEAN)
+			Log.v(Loading.TAG,"index["+index+"], "+(Math.round(mAmountInt.get(index)))+"/"+mCount.get(index)+")");
 		return String.valueOf(Math.round(mAmountInt.get(index)/mCount.get(index)));
 	}
 }

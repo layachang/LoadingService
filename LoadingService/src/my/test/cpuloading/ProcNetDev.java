@@ -218,7 +218,7 @@ public class ProcNetDev extends BasicFunc {
 		if (index==NET_ALL_INDEX) {
 			final int total = getTransmitWlan0Bytes()+getReceiveWlan0Bytes();
 			recordMaxMin(NET_ALL_INDEX, total);
-
+			recordMean(NET_ALL_INDEX, total);
 			return String.valueOf(total);
 		}
 		return null;

@@ -188,7 +188,7 @@ public class ProcStat extends BasicFunc {
 		if (index==CPU_ALL_INDEX) {
 			final int utilization = getUtil();
 			recordMaxMin(CPU_ALL_INDEX, utilization);
-			//recordMean(CPU_ALL_INDEX, u);
+			recordMean(CPU_ALL_INDEX, utilization);
 			return String.valueOf(utilization);
 		}
 		return null;
