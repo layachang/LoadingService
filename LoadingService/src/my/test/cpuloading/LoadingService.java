@@ -79,7 +79,12 @@ public class LoadingService extends Service  {
 		//print mean value
 		printMean();
 		printMedian();
-		printSD();
+		printVar();		//Must after printMean()
+		printSD();		//Must after printVar()
+		StringBuffer input = new StringBuffer();
+		input.append(",CPU ALL,CPU PID,MEM ALL, MEM PID,DISK ALL,DISK READ,DISK WRITE,NET ALL,NET REC,NET TRA, NET UID,BATT,AUDIO ");
+		input.append(",%,%,%,%,KB,KB,KB,KB,KB,KB,KB,%, ");
+		wfile.write(input.toString());
 		if(mVolAll!=null) mVolAll.destory();
 		handler.removeCallbacks(catchData);
         if(wfile!=null) {
@@ -145,9 +150,12 @@ public class LoadingService extends Service  {
 	protected void printValues() {
 		if (mFirst) {
 			mFirst = false;
-			StringBuffer input = new StringBuffer();
-			input.append(",CPU ALL,CPU PID,MEM ALL, MEM PID,DISK ALL,DISK READ,DISK WRITE,NET ALL, NET UID,BATT,AUDIO ");
-			wfile.write(input.toString());
+			StringBuffer input1 = new StringBuffer();
+			input1.append(",CPU ALL,CPU PID,MEM ALL, MEM PID,DISK READ,DISK WRITE,DISK ALL,NET ALL,NET REC,NET TRA, NET UID,AUDIO,BATT");
+			wfile.write(input1.toString());
+			StringBuffer input2 = new StringBuffer();
+			input2.append(",%,%,%,%,KB,KB,KB,KB,KB,KB,KB,%, ");
+			wfile.write(input2.toString());
 			return;
 		}
 		long currTime = System.currentTimeMillis();
@@ -157,62 +165,89 @@ public class LoadingService extends Service  {
 		input.append(mCpuPid.getValues(BasicFunc.CPU_PID_INDEX)); input.append(",");
 		input.append(mMemAll.getValues(BasicFunc.MEM_ALL_INDEX)); input.append(",");
 		input.append(mMemPid.getValues(BasicFunc.MEM_PID_INDEX)); input.append(",");
-		input.append(mDiskAll.getValues(BasicFunc.DISK_ALL_INDEX)); input.append(",");
 		input.append(mDiskAll.getValues(BasicFunc.DISK_READ_INDEX)); input.append(",");
 		input.append(mDiskAll.getValues(BasicFunc.DISK_WRITE_INDEX)); input.append(",");
+		input.append(mDiskAll.getValues(BasicFunc.DISK_ALL_INDEX)); input.append(",");
 		input.append(mNetAll.getValues(BasicFunc.NET_ALL_INDEX)); input.append(",");
+		input.append(mNetAll.getValues(BasicFunc.NET_REC_INDEX)); input.append(",");
+		input.append(mNetAll.getValues(BasicFunc.NET_TRA_INDEX)); input.append(",");
 		input.append(mNetUid.getValues(BasicFunc.NET_UID_INDEX)); input.append(",-");
-		input.append(mBattAll.getValues(BasicFunc.BATT_ALL_INDEX)); input.append(",");
 		input.append(mVolAll.getValues(BasicFunc.AUDIO_ALL_INDEX)); input.append(",");
+		input.append(mBattAll.getValues(BasicFunc.BATT_ALL_INDEX)); input.append(",");
 
 		wfile.write(input.toString());
 	}
 
 	protected void printMean() {
 		StringBuffer input = new StringBuffer();
-		input.append(",");
+		input.append("Mean,");
 		input.append(mCpuAll.getMean(BasicFunc.CPU_ALL_INDEX)); input.append(",");
 		input.append(mCpuPid.getMean(BasicFunc.CPU_PID_INDEX)); input.append(",");
 		input.append(mMemAll.getMean(BasicFunc.MEM_ALL_INDEX)); input.append(",");
 		input.append(mMemPid.getMean(BasicFunc.MEM_PID_INDEX)); input.append(",");
-		input.append(mDiskAll.getMean(BasicFunc.DISK_ALL_INDEX)); input.append(",");
 		input.append(mDiskAll.getMean(BasicFunc.DISK_READ_INDEX)); input.append(",");
 		input.append(mDiskAll.getMean(BasicFunc.DISK_WRITE_INDEX)); input.append(",");
+		input.append(mDiskAll.getMean(BasicFunc.DISK_ALL_INDEX)); input.append(",");
 		input.append(mNetAll.getMean(BasicFunc.NET_ALL_INDEX)); input.append(",");
+		input.append(mNetAll.getMean(BasicFunc.NET_REC_INDEX)); input.append(",");
+		input.append(mNetAll.getMean(BasicFunc.NET_TRA_INDEX)); input.append(",");
 		input.append(mNetUid.getMean(BasicFunc.NET_UID_INDEX)); input.append(",-");
-		input.append(mBattAll.getMean(BasicFunc.BATT_ALL_INDEX)); input.append(",");
 		input.append(mVolAll.getMean(BasicFunc.AUDIO_ALL_INDEX)); input.append(",");
+		input.append(mBattAll.getMean(BasicFunc.BATT_ALL_INDEX)); input.append(",");
 		wfile.write(input.toString());
 	}
 
 	private void printMedian() {
 		StringBuffer input = new StringBuffer();
-		input.append(",");
+		input.append("Median,");
 		input.append(mCpuAll.getMedian(BasicFunc.CPU_ALL_INDEX)); input.append(",");
 		input.append(mCpuPid.getMedian(BasicFunc.CPU_PID_INDEX)); input.append(",");
 		input.append(mMemAll.getMedian(BasicFunc.MEM_ALL_INDEX)); input.append(",");
 		input.append(mMemPid.getMedian(BasicFunc.MEM_PID_INDEX)); input.append(",");
-		input.append(mDiskAll.getMedian(BasicFunc.DISK_ALL_INDEX)); input.append(",");
 		input.append(mDiskAll.getMedian(BasicFunc.DISK_READ_INDEX)); input.append(",");
 		input.append(mDiskAll.getMedian(BasicFunc.DISK_WRITE_INDEX)); input.append(",");
+		input.append(mDiskAll.getMedian(BasicFunc.DISK_ALL_INDEX)); input.append(",");
 		input.append(mNetAll.getMedian(BasicFunc.NET_ALL_INDEX)); input.append(",");
+		input.append(mNetAll.getMedian(BasicFunc.NET_REC_INDEX)); input.append(",");
+		input.append(mNetAll.getMedian(BasicFunc.NET_TRA_INDEX)); input.append(",");
 		input.append(mNetUid.getMedian(BasicFunc.NET_UID_INDEX)); input.append(",-");
-		input.append(mBattAll.getMedian(BasicFunc.BATT_ALL_INDEX)); input.append(",");
 		input.append(mVolAll.getMedian(BasicFunc.AUDIO_ALL_INDEX)); input.append(",");
+		input.append(mBattAll.getMedian(BasicFunc.BATT_ALL_INDEX)); input.append(",");
 		wfile.write(input.toString());
 	}
 
+	private void printVar() {
+		StringBuffer input = new StringBuffer();
+		input.append("Variance,");
+		input.append(mCpuAll.getVariance(BasicFunc.CPU_ALL_INDEX)); input.append(",");
+		input.append(mCpuPid.getVariance(BasicFunc.CPU_PID_INDEX)); input.append(",");
+		input.append(mMemAll.getVariance(BasicFunc.MEM_ALL_INDEX)); input.append(",");
+		input.append(mMemPid.getVariance(BasicFunc.MEM_PID_INDEX)); input.append(",");
+		input.append(mDiskAll.getVariance(BasicFunc.DISK_READ_INDEX)); input.append(",");
+		input.append(mDiskAll.getVariance(BasicFunc.DISK_WRITE_INDEX)); input.append(",");
+		input.append(mDiskAll.getVariance(BasicFunc.DISK_ALL_INDEX)); input.append(",");
+		input.append(mNetAll.getVariance(BasicFunc.NET_ALL_INDEX)); input.append(",");
+		input.append(mNetAll.getVariance(BasicFunc.NET_REC_INDEX)); input.append(",");
+		input.append(mNetAll.getVariance(BasicFunc.NET_TRA_INDEX)); input.append(",");
+		input.append(mNetUid.getVariance(BasicFunc.NET_UID_INDEX)); input.append(",-");
+		input.append(mBattAll.getVariance(BasicFunc.BATT_ALL_INDEX)); input.append(",");
+		input.append(mVolAll.getVariance(BasicFunc.AUDIO_ALL_INDEX)); input.append(",");
+		wfile.write(input.toString());
+	}
+	
 	private void printSD() {
 		StringBuffer input = new StringBuffer();
-		input.append(",");
+		input.append("SD,");
 		input.append(mCpuAll.getSD(BasicFunc.CPU_ALL_INDEX)); input.append(",");
 		input.append(mCpuPid.getSD(BasicFunc.CPU_PID_INDEX)); input.append(",");
 		input.append(mMemAll.getSD(BasicFunc.MEM_ALL_INDEX)); input.append(",");
 		input.append(mMemPid.getSD(BasicFunc.MEM_PID_INDEX)); input.append(",");
-		input.append(mDiskAll.getSD(BasicFunc.DISK_ALL_INDEX)); input.append(",");
 		input.append(mDiskAll.getSD(BasicFunc.DISK_READ_INDEX)); input.append(",");
 		input.append(mDiskAll.getSD(BasicFunc.DISK_WRITE_INDEX)); input.append(",");
+		input.append(mDiskAll.getSD(BasicFunc.DISK_ALL_INDEX)); input.append(",");
 		input.append(mNetAll.getSD(BasicFunc.NET_ALL_INDEX)); input.append(",");
+		input.append(mNetAll.getSD(BasicFunc.NET_REC_INDEX)); input.append(",");
+		input.append(mNetAll.getSD(BasicFunc.NET_TRA_INDEX)); input.append(",");
 		input.append(mNetUid.getSD(BasicFunc.NET_UID_INDEX)); input.append(",-");
 		input.append(mBattAll.getSD(BasicFunc.BATT_ALL_INDEX)); input.append(",");
 		input.append(mVolAll.getSD(BasicFunc.AUDIO_ALL_INDEX)); input.append(",");

@@ -20,10 +20,9 @@ public class Loading extends Activity {
     /** Called when the activity is first created. */
 	public final static String TAG = "LoadingService";
 	public final static boolean DEBUG = true;
-	
-	public final static boolean SERVICE_DEBUG = true;
+
 	public final static boolean W2SD_DEBUG = true;
-	
+
 	public final static boolean CPU_DEBUG = false; //ProcState
 	public final static boolean CPU_PID_DEBUG = false; //ProcState
 	public final static boolean MEM_DEBUG = false; //MemInfo

@@ -57,7 +57,7 @@ public class NetStats  extends BasicFunc {
 	@Override
 	protected String getValues(int index) {
 		if (index==NET_UID_INDEX) {
-			final int total = getTx()+getRx();
+			final int total = (getTx()+getRx())/1024;
 			recordMaxMin(NET_UID_INDEX, total);
 			recordMean(NET_UID_INDEX, total);
 			return String.valueOf(total);

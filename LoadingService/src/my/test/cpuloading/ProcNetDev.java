@@ -215,9 +215,19 @@ public class ProcNetDev extends BasicFunc {
 	@Override
 	protected String getValues(int index) {
 		if (index==NET_ALL_INDEX) {
-			final int total = getTransmitWlan0Bytes()+getReceiveWlan0Bytes();
+			final int total = (mVarTranW0Bytes+mVarReW0Bytes)/1024;
 			recordMaxMin(NET_ALL_INDEX, total);
 			recordMean(NET_ALL_INDEX, total);
+			return String.valueOf(total);
+		} else 	if (index==NET_REC_INDEX) {
+			final int total = getReceiveWlan0Bytes()/1024;
+			recordMaxMin(NET_REC_INDEX, total);
+			recordMean(NET_REC_INDEX, total);
+			return String.valueOf(total);
+		} else 	if (index==NET_TRA_INDEX) {
+			final int total = getReceiveWlan0Bytes()/1024;
+			recordMaxMin(NET_TRA_INDEX, total);
+			recordMean(NET_TRA_INDEX, total);
 			return String.valueOf(total);
 		}
 		return null;

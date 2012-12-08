@@ -16,9 +16,11 @@ public abstract class BasicFunc {
 	public static final int DISK_READ_INDEX = 6;
 	public static final int DISK_WRITE_INDEX = 7;
 	public static final int NET_ALL_INDEX = 8;
-	public static final int NET_UID_INDEX = 9;
-	public static final int BATT_ALL_INDEX = 10;
-	public static final int AUDIO_ALL_INDEX = 11;
+	public static final int NET_REC_INDEX = 9;
+	public static final int NET_TRA_INDEX = 10;
+	public static final int NET_UID_INDEX = 11;
+	public static final int BATT_ALL_INDEX = 12;
+	public static final int AUDIO_ALL_INDEX = 13;
 	
 	private static final int mPrecision = 2;
 	private LoadingService mContext;
@@ -29,8 +31,9 @@ public abstract class BasicFunc {
 	private HashMap<Integer, Integer> mCount = new HashMap<Integer, Integer>();
 	private HashMap<Integer, Integer> mMax = new HashMap<Integer, Integer>();
 	private HashMap<Integer, Integer> mMin = new HashMap<Integer, Integer>();
-	private HashMap<Integer, Float> mMean = new HashMap<Integer, Float>();
 	private HashMap<Integer, Integer> mMedian = new HashMap<Integer, Integer>();
+	private HashMap<Integer, Float> mMean = new HashMap<Integer, Float>();
+	private HashMap<Integer, Float> mVar = new HashMap<Integer, Float>();
 	private HashMap<Integer, ArrayList<Integer>> mValues = new HashMap<Integer, ArrayList<Integer>>();
 	
 	protected abstract void dumpValues();
@@ -142,7 +145,12 @@ public abstract class BasicFunc {
 		String result = nf.format(value).replace(",", "");
 		return Float.valueOf(result);
 	}
-
+	private float round(double value) {
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMaximumFractionDigits(2);
+		String result = nf.format(value).replace(",", "");
+		return Float.valueOf(result);
+	}
 	protected String getMedian(int index) {
 		if (mCount!=null && mCount.get(index)>0) {
 			float value;
@@ -174,8 +182,7 @@ public abstract class BasicFunc {
 			return "";
 		}
 	}
-
-	protected String getSD(int index) {
+	protected String getVariance(int index) {
 		if (mCount!=null && mCount.get(index)>0) {
 			float mean = mMean.get(index);
 			double amount=0;
@@ -184,12 +191,23 @@ public abstract class BasicFunc {
 			for (int i=0; i<values.size();i++) {
 				int value=values.get(i);
 				amount+=(value-mean)*(value-mean);
-				if(Loading.DEBUG && Loading.SD)
+				if(Loading.DEBUG && Loading.VARIANCE)
 					Log.v(Loading.TAG,"index["+index+"], ("+value+"-"+mean+")^2="+(value-mean)*(value-mean));
 			}
-			float sd = round((float)Math.sqrt(amount/mCount.get(index)));
+			float variance = round(amount/mCount.get(index));
+			mVar.put(index, variance);
+			if(Loading.DEBUG && Loading.VARIANCE)
+				Log.v(Loading.TAG,"index["+index+"], Variance: "+amount+"/"+mCount.get(index)+" ="+variance);
+			return String.valueOf(variance);
+		} else {
+			return "";
+		}
+	}
+	protected String getSD(int index) {
+		if (mCount!=null && mCount.get(index)>0) {
+			float sd = round((float)Math.sqrt(mVar.get(index)));
 			if(Loading.DEBUG && Loading.SD)
-				Log.v(Loading.TAG,"index["+index+"], Standard Deviation: "+amount+"/"+mCount.get(index)+" ="+sd);
+				Log.v(Loading.TAG,"index["+index+"], Standard Deviation: sqrt("+mVar.get(index)+") ="+sd);
 			return String.valueOf(sd);
 		} else {
 			return "";
