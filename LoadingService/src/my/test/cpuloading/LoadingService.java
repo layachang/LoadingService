@@ -2,11 +2,7 @@ package my.test.cpuloading;
 
 import android.app.ActivityManager;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.BatteryManager;
 import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,13 +11,11 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 public class LoadingService extends Service  {
 	private Handler handler = new Handler();
-	
+
 	private String KEY_CACHE = "";
 	private String KEY_SYSTEM = "";
 	private String KEY_DATA = "";
@@ -32,14 +26,11 @@ public class LoadingService extends Service  {
 	private String mProcessName;
 	private int mPID=0;
 	private int mUID=0;
-	private long mCount=0;
 	private boolean mFirst = true;
 	private static long mStartTime=0;
 
 	private static WriteFile2SD wfile;
-
 	private ProcStat mCpuAll;
-	private SysCpuLoad mCpuAll15;
 	private DumpCPU mCpuPid;
 	private MemInfo mMemAll;
 	private DumpMEM mMemPid;
@@ -97,8 +88,6 @@ public class LoadingService extends Service  {
 
 	private Runnable catchData = new Runnable() {
         public void run() {
-        	long ctime = System.currentTimeMillis();
-            //log�ثe�ɶ�
     		if (mPID!=0 && mUID!=0) {
                 dumpValues();
                 printValues();
@@ -218,30 +207,7 @@ public class LoadingService extends Service  {
 
 	@Override
 	public IBinder onBind(Intent arg0) {
-		// TODO Auto-generated method stub
 		return null;
-	}
-	
-	private class CpuAll {
-		private Object mMatchObject;
-		public CpuAll(int pid, int uid, int cpu_num) {
-			if (VERSION.SDK_INT!=15)
-				mMatchObject = new ProcStat(pid,uid,cpu_num);
-			else
-				mMatchObject = new SysCpuLoad();
-		}
-		public void dumpValues(){
-			if (VERSION.SDK_INT!=15)
-				((ProcStat)mMatchObject).dumpValues();
-			else
-				((SysCpuLoad)mMatchObject).dumpValues();
-		}
-		public String getValues(int index) {
-			if (VERSION.SDK_INT!=15)
-				return ((ProcStat)mMatchObject).getValues(index);
-			else
-				return ((SysCpuLoad)mMatchObject).getValues(index);
-		}
 	}
 
 	private void getPIDUIDByPKG(String pkgName) {

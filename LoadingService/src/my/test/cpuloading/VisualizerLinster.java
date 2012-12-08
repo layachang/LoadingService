@@ -1,7 +1,5 @@
 package my.test.cpuloading;
 
-import android.media.MediaPlayer;
-import android.media.audiofx.Equalizer;
 import android.media.audiofx.Visualizer;
 import android.media.audiofx.Visualizer.OnDataCaptureListener;
 import android.util.Log;

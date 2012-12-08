@@ -2,10 +2,7 @@ package my.test.cpuloading;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.math.BigDecimal;
-import java.util.ArrayList;
 
-import android.content.Context;
 import android.util.Log;
 
 public class ProcStat extends BasicFunc {

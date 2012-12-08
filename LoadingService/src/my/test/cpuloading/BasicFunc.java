@@ -1,10 +1,8 @@
 package my.test.cpuloading;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import android.content.Context;
 import android.util.Log;
 
 public abstract class BasicFunc {
@@ -53,23 +51,7 @@ public abstract class BasicFunc {
 	protected void insertAmount(int index, ArrayList<String> output) {
 		output.add( index, getMin(index));
 	}
-/*
-	public static float round(float unrounded)
-	{
-		return Math.round(unrounded);
-	    //BigDecimal bd = new BigDecimal(unrounded);
-	    //BigDecimal rounded = bd.setScale(mPrecision, BigDecimal.ROUND_HALF_UP);
-	    //return rounded.floatValue();
-	}
 
-	public static double round(double unrounded)
-	{
-		return Math.round(unrounded);
-	    //BigDecimal bd = new BigDecimal(unrounded);
-	    //BigDecimal rounded = bd.setScale(mPrecision, BigDecimal.ROUND_HALF_UP);
-	    //return rounded.doubleValue();
-	}
-*/
 	protected ArrayList<String> dataPasing(String load) {
 		ArrayList<String> result = new ArrayList<String>();
 		String[] toks = load.split(" ");

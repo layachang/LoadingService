@@ -1,6 +1,5 @@
 package my.test.cpuloading;
 
-import android.content.Context;
 import android.net.TrafficStats;
 import android.util.Log;
 

@@ -6,12 +6,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.content.Context;
 import android.util.Log;
 
 public class DumpCPU extends BasicFunc {
-	private Context mContext;
-	private WriteFile2SD wfile;
 	private float mCurrCpu;
 	private long mCurrentTime=0;
 	private int mLogTime=0;

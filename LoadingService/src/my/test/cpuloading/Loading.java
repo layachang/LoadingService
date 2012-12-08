@@ -1,23 +1,9 @@
 package my.test.cpuloading;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningAppProcessInfo;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -27,7 +13,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -77,12 +62,7 @@ public class Loading extends Activity {
 	private final static int DEVICE_NUM_GALAXY_TAB_7_7 = 4;
 	private final static int DEVICE_NUM_PICASA_MF = 5;
 
-	private String[] APP = {"","LoadingService",
-								 "Vimeo",
-								 "Youtube",
-								 "DailyMotion",
-								 "MySpace",
-								 "BreakApp"};
+	private String[] APP = {"","LoadingService","Vimeo","Youtube","DailyMotion","MySpace", "BreakApp"};
 	
 	private String[] PAKNAME = {"my.test.cpuloading",
 			 "com.vimeo.android.videoapp",
@@ -97,8 +77,6 @@ public class Loading extends Activity {
 	private int READ_LINE = 0;
 	private int NUM_CPU = 0;
 	private int KEY_FILESYSTEM = 4;
-	
-	
 	private Button startButton;
 	private Button stopButton;
 	private RadioButton device1;
@@ -106,10 +84,7 @@ public class Loading extends Activity {
 	private RadioButton device3;
 	private RadioButton device4;
 	private RadioButton device5;
-	private TextView mStateString;
 	private Spinner mPSSpinner;
-	//private ArrayAdapter<String> lunchList;
-	private PackageManager pm;
     long total = 0;
     long idle = 0;
     int mPID;
@@ -117,8 +92,7 @@ public class Loading extends Activity {
     private String mFileName;
     String mProcessName;
     EditText mFilenameFiled;
-	private BroadcastReceiver mBatInfoReceiver ;
-    
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -140,14 +114,13 @@ public class Loading extends Activity {
         mFilenameFiled = (EditText)findViewById(R.id.filename);
         mPSSpinner = (Spinner)findViewById(R.id.ps_spinnner);
 	}
+
     private void setSharedPreferences() {
         SharedPreferences pref = getSharedPreferences("LOADING_DEVICE_NUMBER", 0);
         setCheckboutton(pref);
-        //setListener(rdg,filename,spinnner);
         RadioGroup rdg = (RadioGroup)findViewById(R.id.rdg1);
         rdg.setOnCheckedChangeListener(
     		new RadioGroup.OnCheckedChangeListener() {
-
 				public void onCheckedChanged(RadioGroup group, final int checkedId) {
 					switch (checkedId) {
 						case R.id.device1:
@@ -166,9 +139,7 @@ public class Loading extends Activity {
 							memSetting(DEVICE_NUM_PICASA_MF);
 							break;
 					}
-					
 				}
-
 				private void memSetting(int device_num) {
 					SharedPreferences pref = getSharedPreferences("LOADING_DEVICE_NUMBER", device_num);
 					SharedPreferences.Editor PE = pref.edit();
@@ -198,162 +169,9 @@ public class Loading extends Activity {
                 Toast.makeText(Loading.this, "You did not select anything.", Toast.LENGTH_LONG).show();
             }
         });
-    	/*
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>( this,android.R.layout.simple_spinner_item,queryAllRunningAppInfo());
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mPSSpinner.setAdapter(adapter);
-        mPSSpinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
-            public void onItemSelected(AdapterView adapterView, View view, int position, long id){
-            	if (position!=0) {
-	                Toast.makeText(Loading.this, "You selected: "+adapterView.getSelectedItem().toString()+" ("+position+")", Toast.LENGTH_LONG).show();
-	                String[] select= adapterView.getSelectedItem().toString().split(";");
-	                mProcessName = select[0];
-	                mPID = Integer.parseInt(select[1]);
-	                mUID = Integer.parseInt(select[2]);
-	                mFilenameFiled.setText(getLabelByPID(mPID));
-            	}
-            }
-            public void onNothingSelected(AdapterView arg0) {
-                Toast.makeText(Loading.this, "You did not select anything.", Toast.LENGTH_LONG).show();
-            }
-        });
-        */
     }
 
-
-/*
-	private String[] queryAllRunningAppInfo() {
-    	pm = this.getPackageManager();
-    	List<ApplicationInfo> listAppcations = pm.getInstalledApplications(PackageManager.GET_UNINSTALLED_PACKAGES);
-    	//Collections.sort(listAppcations,new ApplicationInfo.DisplayNameComparator(pm));
-    	
-        ActivityManager mgr = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
-        List<RunningAppProcessInfo> processes = mgr.getRunningAppProcesses();
-        //String text = "All Process:\n";
-        String[] ps_str= new String[processes.size()];
-        
-        int count = 0;
-        for (ActivityManager.RunningAppProcessInfo appProcess : processes) {  
-        	if (inDataset(appProcess.processName)) {
-        		int pid = appProcess.pid;
-	        	String processName = appProcess.processName;
-	        	int uid = appProcess.uid;
-	        	ps_str[count]= processName+";"+pid+";"+uid;
-	        	//Log.i(TAG, processName+";"+pid+";"+uid);
-	        	count++;
-        	}
-        }
-        String[] result = new String[count+1];
-        int idx=1;
-        result[0] = "Please Select application"; 
-        for (String s : ps_str) {
-        	if(s!=null) {
-	        	result[idx]=s;
-	        	idx++;
-        	}
-        }
-    	//Map<String, ActivityManager.RunningAppProcessInfo> pgkProcessAppMap = new HashMap<String, ActivityManager.RunningAppProcessInfo>();
-    	//ActivityManager mActivityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-    	//List<ActivityManager.RunningAppProcessInfo> appProcessList = mActivityManager.getRunningAppProcesses();
-
-    	//for (ActivityManager.RunningAppProcessInfo appProcess : processes) {
-    	//	int pid = appProcess.pid; // pid
-    	//	String processName = appProcess.processName;
-    	//	String[] pkgNameList = appProcess.pkgList;
-    	//	Log.i(TAG, "processName: " + processName + "  pid: " + pid);
-    		
-    	//	for (int i = 0; i < pkgNameList.length; i++) {
-    	//		String pkgName = pkgNameList[i];
-    	//		Log.i(TAG, "packageName " + pkgName + " at index " + i+ " in process " + pid);
-    	//		pgkProcessAppMap.put(pkgName, appProcess);
-    	//	}
-    	//}
-    	
-    	//List<RunningAppInfo> runningAppInfos = new ArrayList<RunningAppInfo>();
-    	//int i = 0;
-    	//String[] ps_str = new String[listAppcations.size()];
-    	//for (ApplicationInfo app : listAppcations) {
-    		//if (pgkProcessAppMap.containsKey(app.packageName)) {
-    			
-    			//int pid = pgkProcessAppMap.get(app.packageName).pid;
-    			//String processName = pgkProcessAppMap.get(app.packageName).processName;
-    			//runningAppInfos.add(getAppInfo(app, pid, processName));
-    			//ps_str[i] = processName+";"+android.os.Process.getUidForName(processName)+";"+pid;
-    			//i++;
-    		//}
-    	//}
-    	return result;
-    }
-	*/
-	/*
-    private boolean inDataset(String processName) {
-    	//return true;
-    	for (String s : datasets) {
-    		if (s.equals(processName))
-    			return true;
-    	}
-		return false;
-	}
-	*/
-	/*
-	private void setListener(RadioGroup rdg, RadioGroup filename, Spinner spinnner) {
-    	rdg.setOnCheckedChangeListener(
-        		new RadioGroup.OnCheckedChangeListener() {
-
-					public void onCheckedChanged(RadioGroup group, final int checkedId) {
-						switch (checkedId) {
-							case R.id.device1:
-								memSetting(DEVICE_NUM_SAMSUNG_S2);
-								break;
-							case R.id.device2:
-								memSetting(DEVICE_NUM_GALAXY_NOTE_10_1);
-								break;
-							case R.id.device3:
-								memSetting(DEVICE_NUM_GALAXY_TAB_7_7);
-								break;
-						}
-						
-					}
-					private void memSetting(int device_num) {
-						SharedPreferences pref = getSharedPreferences("LOADING_DEVICE_NUMBER", device_num);
-						SharedPreferences.Editor PE = pref.edit();
-						PE.putInt("LOADING_DEVICE_NUMBER", device_num);
-						PE.commit();
-						loadSetting(device_num);
-					}
-        		});
-    	filename.setOnCheckedChangeListener(
-        		new RadioGroup.OnCheckedChangeListener() {
-
-					public void onCheckedChanged(RadioGroup group, final int checkedId) {
-						
-						switch (checkedId) {
-							case R.id.len1:
-								mFileName.append("LEN_60_");
-								break;
-							case R.id.len2:
-								mFileName.append("LEN_606_");
-								break;
-						}
-						
-					}
-        		});
-    	spinnner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
-    		public void onItemSelected(AdapterView adapterView, View view, int position, long id){
-    			Toast.makeText(Loading.this, "Selected: "+adapterView.getSelectedItem().toString(), Toast.LENGTH_LONG).show();
-    			mFileName.append(adapterView.getSelectedItem().toString());
-    			mStateString.setText("Restart");
-    			mStateString.invalidate();
-    		}
-    		public void onNothingSelected(AdapterView arg0) {
-    			Toast.makeText(Loading.this, "No selected", Toast.LENGTH_LONG).show();
-    		}
-    	});
-
-	}
-*/
 	private void setCheckboutton(SharedPreferences pref) {
-    	RadioButton btu;
     	int def_device = pref.getInt("LOADING_DEVICE_NUMBER", 0);
     	Log.v(TAG, "setCheckboutton, def_device="+def_device);
     	loadSetting(def_device);
@@ -442,11 +260,9 @@ public class Loading extends Activity {
     };
     
     private Button.OnClickListener stopClickListener = new Button.OnClickListener() {
-    	@SuppressWarnings("deprecation")
 		public void onClick(View arg0) {
     		Log.v(Loading.TAG,"!!!!!!!!!! soptService !!!!!!!!!!");
     		soptService();
-
     	}
     };
 
@@ -464,53 +280,16 @@ public class Loading extends Activity {
 		device5.setEnabled(true);
 	}
 
-	public String getKEY_CACHE() {
-		return KEY_CACHE;
-	}
-
-	public void setKEY_CACHE(String kEY_CACHE) {
-		KEY_CACHE = kEY_CACHE;
-	}
-
-	public int getNUM_CPU() {
-		return NUM_CPU;
-	}
-
-	public void setNUM_CPU(int num_cpu) {
-		NUM_CPU = num_cpu;
-	}
-	
-
-	public String getKEY_SYSTEM() {
-		return KEY_SYSTEM;
-	}
-
-	public void setKEY_SYSTEM(String kEY_SYSTEM) {
-		KEY_SYSTEM = kEY_SYSTEM;
-	}
-
-	public String getKEY_DATA() {
-		return KEY_DATA;
-	}
-
-	public void setKEY_DATA(String kEY_DATA) {
-		KEY_DATA = kEY_DATA;
-	}
-
-	public int getREAD_LINE() {
-		return READ_LINE;
-	}
-
-	public void setREAD_LINE(int rEAD_LINE) {
-		READ_LINE = rEAD_LINE;
-	}
-	
-	public int getKEY_FILESYSTEM() {
-		return KEY_FILESYSTEM;
-	}
-
-	public void setKEY_FILESYSTEM(int kEY_FILESYSTEM) {
-		KEY_FILESYSTEM = kEY_FILESYSTEM;
-	}
-
+	public int getNUM_CPU() { return NUM_CPU; }
+	public int getREAD_LINE() { return READ_LINE; }
+	public int getKEY_FILESYSTEM() { return KEY_FILESYSTEM; }
+	public String getKEY_DATA() { return KEY_DATA; }
+	public String getKEY_CACHE() { return KEY_CACHE; }
+	public String getKEY_SYSTEM() { return KEY_SYSTEM; }
+	public void setNUM_CPU(int num_cpu) { NUM_CPU = num_cpu; }
+	public void setREAD_LINE(int rEAD_LINE) { READ_LINE = rEAD_LINE; }
+	public void setKEY_FILESYSTEM(int kEY_FILESYSTEM) { KEY_FILESYSTEM = kEY_FILESYSTEM; }
+	public void setKEY_DATA(String kEY_DATA) { KEY_DATA = kEY_DATA; }
+	public void setKEY_CACHE(String kEY_CACHE) { KEY_CACHE = kEY_CACHE; }
+	public void setKEY_SYSTEM(String kEY_SYSTEM) { KEY_SYSTEM = kEY_SYSTEM; }
 }
