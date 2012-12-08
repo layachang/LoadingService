@@ -34,8 +34,9 @@ public class Loading extends Activity {
 	public final static boolean BATT_DEBUG = false; //BattInfoProc
 	public final static boolean BLUE_DEBUG = false; //Bluetooth
 	public final static boolean AUDIO_DEBUG = false; //Audio
-	public final static boolean AMOUNT_MEAN = false; //Amount
 	public final static boolean MAX_MIN = false; //MAX MIN
+	public final static boolean AMOUNT_MEAN = false; //Amount
+	public final static boolean MEDIAN = false; //Median
 	public final static boolean VARIANCE = true; //VARIANCE
 
 	/**Battery**/

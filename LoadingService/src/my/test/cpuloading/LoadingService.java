@@ -78,6 +78,7 @@ public class LoadingService extends Service  {
     private void stopAll() {
 		//print mean value
 		printMean();
+		printMedian();
 		if(mVolAll!=null) mVolAll.destory();
 		handler.removeCallbacks(catchData);
         if(wfile!=null) {
@@ -165,6 +166,7 @@ public class LoadingService extends Service  {
 
 		wfile.write(input.toString());
 	}
+
 	protected void printMean() {
 		StringBuffer input = new StringBuffer();
 		input.append(",");
@@ -179,9 +181,26 @@ public class LoadingService extends Service  {
 		input.append(mNetUid.getMean(BasicFunc.NET_UID_INDEX)); input.append(",-");
 		input.append(mBattAll.getMean(BasicFunc.BATT_ALL_INDEX)); input.append(",");
 		input.append(mVolAll.getMean(BasicFunc.AUDIO_ALL_INDEX)); input.append(",");
-
 		wfile.write(input.toString());
 	}
+
+	private void printMedian() {
+		StringBuffer input = new StringBuffer();
+		input.append(",");
+		input.append(mCpuAll.getMedian(BasicFunc.CPU_ALL_INDEX)); input.append(",");
+		input.append(mCpuPid.getMedian(BasicFunc.CPU_PID_INDEX)); input.append(",");
+		input.append(mMemAll.getMedian(BasicFunc.MEM_ALL_INDEX)); input.append(",");
+		input.append(mMemPid.getMedian(BasicFunc.MEM_PID_INDEX)); input.append(",");
+		input.append(mDiskAll.getMedian(BasicFunc.DISK_ALL_INDEX)); input.append(",");
+		input.append(mDiskAll.getMedian(BasicFunc.DISK_READ_INDEX)); input.append(",");
+		input.append(mDiskAll.getMedian(BasicFunc.DISK_WRITE_INDEX)); input.append(",");
+		input.append(mNetAll.getMedian(BasicFunc.NET_ALL_INDEX)); input.append(",");
+		input.append(mNetUid.getMedian(BasicFunc.NET_UID_INDEX)); input.append(",-");
+		input.append(mBattAll.getMedian(BasicFunc.BATT_ALL_INDEX)); input.append(",");
+		input.append(mVolAll.getMedian(BasicFunc.AUDIO_ALL_INDEX)); input.append(",");
+		wfile.write(input.toString());
+	}
+
 	protected void printProcCpuinfo() {
 	    try {
 	        String load ;

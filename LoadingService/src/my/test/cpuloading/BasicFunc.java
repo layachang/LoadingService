@@ -1,6 +1,7 @@
 package my.test.cpuloading;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import android.util.Log;
@@ -19,16 +20,17 @@ public abstract class BasicFunc {
 	public static final int AUDIO_ALL_INDEX = 11;
 	
 	private static final int mPrecision = 2;
-	protected LoadingService mContext;
+	private LoadingService mContext;
 	protected int mUID;
 	protected String mPID;
 	protected String mProcessName;
-	protected HashMap<Integer, Long> mAmountLong = new HashMap<Integer, Long>();
-	protected HashMap<Integer, Float> mAmountFloat = new HashMap<Integer, Float>();
-	protected HashMap<Integer, Integer> mAmountInt = new HashMap<Integer, Integer>();
-	protected HashMap<Integer, Integer> mCount = new HashMap<Integer, Integer>();
-	protected HashMap<Integer, Integer> mMax = new HashMap<Integer, Integer>();
-	protected HashMap<Integer, Integer> mMin = new HashMap<Integer, Integer>();
+	private HashMap<Integer, Integer> mAmountInt = new HashMap<Integer, Integer>();
+	private HashMap<Integer, Integer> mCount = new HashMap<Integer, Integer>();
+	private HashMap<Integer, Integer> mMax = new HashMap<Integer, Integer>();
+	private HashMap<Integer, Integer> mMin = new HashMap<Integer, Integer>();
+	private HashMap<Integer, Integer> mMean = new HashMap<Integer, Integer>();
+	private HashMap<Integer, Integer> mMedian = new HashMap<Integer, Integer>();
+	private HashMap<Integer, ArrayList<Integer>> mValues = new HashMap<Integer, ArrayList<Integer>>();
 	
 	protected abstract void dumpValues();
 
@@ -93,12 +95,18 @@ public abstract class BasicFunc {
 			}
 			mAmountInt.put(index, mAmountInt.get(index)+value);
             mCount.put(index, mCount.get(index)+1);
+            
+            mValues.get(index).add(value);
 		} else {
 			if(Loading.DEBUG && Loading.AMOUNT_MEAN) {
 				Log.v(Loading.TAG,"mAmountInt.put("+index+", "+value);
 			}
 	        mAmountInt.put(index, value);
 	        mCount.put(index, 1);
+
+	        ArrayList<Integer> values = new ArrayList<Integer>();
+	        values.add(value);
+	        mValues.put(index, values);
 		}
 	}
 
@@ -119,8 +127,25 @@ public abstract class BasicFunc {
 	}
 
 	protected String getMean(int index) {
+		int mean = Math.round(mAmountInt.get(index)/mCount.get(index));
+		mMean.put(index, mean);
 		if(Loading.DEBUG && Loading.AMOUNT_MEAN)
-			Log.v(Loading.TAG,"index["+index+"], "+(Math.round(mAmountInt.get(index)))+"/"+mCount.get(index)+")");
-		return String.valueOf(Math.round(mAmountInt.get(index)/mCount.get(index)));
+			Log.v(Loading.TAG,"index["+index+"], "+(Math.round(mAmountInt.get(index)))+"/"+mCount.get(index)+") = "+mean);
+		return String.valueOf(mean);
 	}
+	protected String getMedian(int index) {
+		float value;
+		ArrayList<Integer> values = mValues.get(index);
+		Collections.sort(values);
+		int num = mCount.get(index);
+		if (num%2==0) {
+			value = (values.get(num/2)+values.get((num/2)+1))/2;
+		} else {
+			value = values.get((num/2)+1);
+		}
+		if(Loading.DEBUG && Loading.MEDIAN)
+			Log.v(Loading.TAG,"index["+index+"], Median="+value);
+		return String.valueOf(value);
+	}
+
 }
