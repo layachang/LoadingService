@@ -1,9 +1,11 @@
 package my.test.cpuloading;
 
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.BatteryManager;
 import android.os.Build.VERSION;
 import android.os.Bundle;
@@ -14,6 +16,8 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class LoadingService extends Service  {
 	private Handler handler = new Handler();
@@ -26,8 +30,8 @@ public class LoadingService extends Service  {
 	private int NUM_CPU= 0;
 	private String mFileName;
 	private String mProcessName;
-	private int mPID;
-	private int mUID;
+	private int mPID=0;
+	private int mUID=0;
 	private long mCount=0;
 	private boolean mFirst = true;
 	private static long mStartTime=0;
@@ -51,26 +55,12 @@ public class LoadingService extends Service  {
     @Override
     public void onStart(Intent intent, int startId) {
 	    handleCommand(intent);
-    	final int pid = mPID;
-    	final int uid = mUID;
-
-	    Log.v(Loading.TAG,"!!!!!!!!!! onStart !!!!!!!!!!VERSION.SDK_INT="+VERSION.SDK_INT);
+	    Log.v(Loading.TAG,"onStart() SDK="+VERSION.SDK_INT);
         handler.postDelayed(catchData, 800);
 
-        wfile = new WriteFile2SD(mFileName);
-
-        mCpuAll = new ProcStat(pid,uid,NUM_CPU);
-        mCpuPid = new DumpCPU(pid,uid);
-        mMemAll = new MemInfo();
-        mMemPid = new DumpMEM(pid);
-        mDiskAll = new Diskstats(KEY_CACHE, KEY_SYSTEM, KEY_DATA, KEY_FILESYSTEM);
-        mNetAll = new ProcNetDev(READ_LINE);
-        mNetUid = new NetStats(uid);
-        mBattAll = new BattInfoProc();
-        mVolAll = new VisualizerLinster();
 	}
-    
-    private void handleCommand(Intent intent) {
+
+	private void handleCommand(Intent intent) {
     	if (intent!=null) {
 	    	Bundle b = intent.getExtras();
 	    	READ_LINE =b.getInt("READ_LINE");
@@ -81,8 +71,6 @@ public class LoadingService extends Service  {
 	    	KEY_FILESYSTEM = b.getInt("KEY_FILESYSTEM");
 	    	mFileName = b.getString("FILE_NAME");
 	    	mProcessName = b.getString("PROCESS_NAME");
-	    	mPID = b.getInt("PID");
-	    	mUID = b.getInt("UID");
     	} else {
     		this.stopSelf();
     		Log.v(Loading.TAG,"!!!!!!!!!! KILL SERVICE !!!!!!!!!!");
@@ -91,27 +79,53 @@ public class LoadingService extends Service  {
 
 	@Override
     public void onDestroy() {
+		stopAll();
+
+        super.onDestroy();
+    }
+     
+    private void stopAll() {
 		//print mean value
 		printMean();
-		mVolAll.destory();
+		if(mVolAll!=null) mVolAll.destory();
 		handler.removeCallbacks(catchData);
         if(wfile!=null) {
         	wfile.close();
         }
-        super.onDestroy();
-    }
-     
-    private Runnable catchData = new Runnable() {
+		
+	}
+
+	private Runnable catchData = new Runnable() {
         public void run() {
         	long ctime = System.currentTimeMillis();
-        	//Log.v(Loading.TAG,String.valueOf(ctime));
             //log�ثe�ɶ�
-            dumpValues();
-            printValues();
-            handler.postDelayed(this, 300);
+    		if (mPID!=0 && mUID!=0) {
+                dumpValues();
+                printValues();
+                if (isPkgAvaliable(mProcessName)) {
+                	handler.postDelayed(this, 300);
+                } else {
+                	stopSelf();
+                }
+    		} else {
+    			getPIDUIDByPKG(mProcessName);
+    			handler.postDelayed(this, 300);
+    		}
         }
     };
+    private void startCacheData() {
+        wfile = new WriteFile2SD(mFileName);
 
+        mCpuAll = new ProcStat(mPID,mUID,NUM_CPU);
+        mCpuPid = new DumpCPU(mPID,mPID);
+        mMemAll = new MemInfo();
+        mMemPid = new DumpMEM(mPID);
+        mDiskAll = new Diskstats(KEY_CACHE, KEY_SYSTEM, KEY_DATA, KEY_FILESYSTEM);
+        mNetAll = new ProcNetDev(READ_LINE);
+        mNetUid = new NetStats(mPID);
+        mBattAll = new BattInfoProc();
+        mVolAll = new VisualizerLinster();
+	}
 	protected void dumpValues() {
     	if (mFirst) {
     		mStartTime = System.currentTimeMillis();
@@ -229,4 +243,41 @@ public class LoadingService extends Service  {
 				return ((SysCpuLoad)mMatchObject).getValues(index);
 		}
 	}
+
+	private void getPIDUIDByPKG(String pkgName) {
+    	ActivityManager am = (ActivityManager)this.getApplicationContext().getSystemService(ACTIVITY_SERVICE);
+        Iterator i = am.getRunningAppProcesses().iterator();
+        while(i.hasNext()) {
+        	ActivityManager.RunningAppProcessInfo info = (ActivityManager.RunningAppProcessInfo)(i.next());
+        	try {
+        		if(info.processName.equals(pkgName)) {
+        			Log.v(Loading.TAG,"pkg="+pkgName+"; pid="+info.pid+"; uid="+info.uid);
+        			if (info.uid!=0 &&info.pid!=0) {
+        				mPID = info.pid;
+        				mUID = info.uid;
+        				startCacheData();
+        				return ;
+        			}
+        		}
+        	} catch(Exception e) {
+        		Log.d(Loading.TAG, "Error>> :"+ e.toString());
+        	}
+        }
+    }
+
+    private boolean isPkgAvaliable(String pkgName) {
+    	ActivityManager am = (ActivityManager)this.getApplicationContext().getSystemService(ACTIVITY_SERVICE);
+        Iterator i = am.getRunningAppProcesses().iterator();
+        while(i.hasNext())  {
+            ActivityManager.RunningAppProcessInfo info = (ActivityManager.RunningAppProcessInfo)(i.next());
+            try { 
+                if(info.processName.equals(pkgName)) {
+                    return true;
+                }
+            } catch(Exception e) {
+            	Log.d(Loading.TAG, "Error>> :"+ e.toString());
+            }
+        }
+        return false;
+    }
 }

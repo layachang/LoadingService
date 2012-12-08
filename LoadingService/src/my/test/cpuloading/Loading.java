@@ -49,8 +49,8 @@ public class Loading extends Activity {
 	public final static boolean BATT_DEBUG = false; //BattInfoProc
 	public final static boolean BLUE_DEBUG = false; //Bluetooth
 	public final static boolean AUDIO_DEBUG = false; //Audio
-	public final static boolean AMOUNT_MEAN = true; //Amount
-	public final static boolean MAX_MIN = true; //MAX MIN
+	public final static boolean AMOUNT_MEAN = false; //Amount
+	public final static boolean MAX_MIN = false; //MAX MIN
 	public final static boolean VARIANCE = true; //VARIANCE
 
 	/**Battery**/
@@ -77,12 +77,20 @@ public class Loading extends Activity {
 	private final static int DEVICE_NUM_GALAXY_TAB_7_7 = 4;
 	private final static int DEVICE_NUM_PICASA_MF = 5;
 
-	private String[] datasets = {"my.test.cpuloading",
-								 "com.vimeo.android.videoapp",
-								 "com.google.android.youtube",
-								 "com.dailymotion.dailymotion",
-								 "com.myspace.android",
-								 "com.breakapp.dreakdotcom"};
+	private String[] APP = {"","LoadingService",
+								 "Vimeo",
+								 "Youtube",
+								 "DailyMotion",
+								 "MySpace",
+								 "BreakApp"};
+	
+	private String[] PAKNAME = {"my.test.cpuloading",
+			 "com.vimeo.android.videoapp",
+			 "com.google.android.youtube",
+			 "com.dailymotion.dailymotion",
+			 "com.myspace.android",
+			 "com.breakapp.dreakdotcom"};
+	
 	private String KEY_CACHE = "";
 	private String KEY_SYSTEM = "";
 	private String KEY_DATA = "";
@@ -174,7 +182,23 @@ public class Loading extends Activity {
 	@Override
     public void onResume(){
     	super.onResume();
-
+    	ArrayAdapter<String> adapter = new ArrayAdapter<String>( this,android.R.layout.simple_spinner_item,APP);
+    	adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    	mPSSpinner.setAdapter(adapter);
+    	mPSSpinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
+    		public void onItemSelected(AdapterView adapterView, View view, int position, long id){
+            	if (position!=0) {
+	                Toast.makeText(Loading.this, "You selected: "+adapterView.getSelectedItem().toString()+" ("+position+")", Toast.LENGTH_LONG).show();
+	                String[] select= adapterView.getSelectedItem().toString().split(";");
+	                mProcessName = PAKNAME[position-1];
+	                mFilenameFiled.setText(adapterView.getSelectedItem().toString()+"_");
+            	}
+    		}
+            public void onNothingSelected(AdapterView arg0) {
+                Toast.makeText(Loading.this, "You did not select anything.", Toast.LENGTH_LONG).show();
+            }
+        });
+    	/*
         ArrayAdapter<String> adapter = new ArrayAdapter<String>( this,android.R.layout.simple_spinner_item,queryAllRunningAppInfo());
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mPSSpinner.setAdapter(adapter);
@@ -193,37 +217,11 @@ public class Loading extends Activity {
                 Toast.makeText(Loading.this, "You did not select anything.", Toast.LENGTH_LONG).show();
             }
         });
+        */
     }
 
-    protected CharSequence getLabelByPID(int pid) {
-    	String processName = "";
-    	CharSequence Label= "Please reflash your application"; 
-    	ActivityManager am = (ActivityManager)this.getSystemService(ACTIVITY_SERVICE);
-        List l = am.getRunningAppProcesses();
-        Iterator i = l.iterator();
-        PackageManager pm = this.getPackageManager();
-        while(i.hasNext()) 
-        {
-              ActivityManager.RunningAppProcessInfo info = (ActivityManager.RunningAppProcessInfo)(i.next());
-              try 
-              { 
-                  if(info.pid == pid)
-                  {
-                	  Label = pm.getApplicationLabel(pm.getApplicationInfo(info.processName, PackageManager.GET_META_DATA));
-                      //Log.d("Process", "Id: "+ info.pid +" ProcessName: "+ info.processName +"  Label: "+c.toString());
-                      //processName = c.toString();
-                      processName = info.processName;
-                      break;
-                  }
-              }
-              catch(Exception e) 
-              {
-                    Log.d(TAG, "Error>> :"+ e.toString());
-              }
-       }
-        return Label;
-	}
 
+/*
 	private String[] queryAllRunningAppInfo() {
     	pm = this.getPackageManager();
     	List<ApplicationInfo> listAppcations = pm.getInstalledApplications(PackageManager.GET_UNINSTALLED_PACKAGES);
@@ -286,6 +284,8 @@ public class Loading extends Activity {
     	//}
     	return result;
     }
+	*/
+	/*
     private boolean inDataset(String processName) {
     	//return true;
     	for (String s : datasets) {
@@ -294,7 +294,7 @@ public class Loading extends Activity {
     	}
 		return false;
 	}
-
+	*/
 	/*
 	private void setListener(RadioGroup rdg, RadioGroup filename, Spinner spinnner) {
     	rdg.setOnCheckedChangeListener(
@@ -394,10 +394,7 @@ public class Loading extends Activity {
 			setKEY_CACHE("mmcblk0p7");
 			setKEY_SYSTEM("mmcblk0p9");
 			setKEY_DATA("mmcblk0p10");
-			//setKEY_CACHE("stl11");
-			//setKEY_SYSTEM("stl9");
-			//setKEY_DATA("mmcblk0p2");
-			setNUM_CPU(1);
+			setNUM_CPU(2);
 			setKEY_FILESYSTEM(4);
 			break;
 		case DEVICE_NUM_GALAXY_NOTE_GTP6810:
@@ -436,16 +433,10 @@ public class Loading extends Activity {
     		intent.putExtra("KEY_FILESYSTEM", getKEY_FILESYSTEM());
     		intent.putExtra("FILE_NAME", mFileName);
     		intent.putExtra("PROCESS_NAME", mProcessName);
-    		intent.putExtra("PID", mPID);
-    		intent.putExtra("UID", mUID);
     		device1.setEnabled(false);
     		device2.setEnabled(false);
     		Log.v(Loading.TAG,"!!!!!!!!!! startService !!!!!!!!!!");
     		startService(intent);
-    		
-            //IntentFilter filter = new IntentFilter();
-            //filter.addAction(Intent.ACTION_BATTERY_CHANGED);
-            //registerReceiver(LoadingService.getBatInfoReceiver(), filter);
     	}
 
     };
@@ -458,13 +449,12 @@ public class Loading extends Activity {
 
     	}
     };
-    
+
 	public void onUserInteraction() {
         super.onUserInteraction();
-        //Log.v(TAG, "onUserInteraction()");
 	}
-	protected void soptService() {
 
+	protected void soptService() {
 		Intent intent = new Intent(Loading.this, LoadingService.class);
 		stopService(intent);
 		device1.setEnabled(true);
@@ -522,16 +512,5 @@ public class Loading extends Activity {
 	public void setKEY_FILESYSTEM(int kEY_FILESYSTEM) {
 		KEY_FILESYSTEM = kEY_FILESYSTEM;
 	}
-	
-	//private RunningAppInfo getAppInfo(ApplicationInfo app, int pid, String processName) {
-	//	RunningAppInfo appInfo = new RunningAppInfo();
-	//	appInfo.setAppLabel((String) app.loadLabel(pm));
-	//	appInfo.setAppIcon(app.loadIcon(pm));
-	//	appInfo.setPkgName(app.packageName);
 
-	//	appInfo.setPid(pid);
-	//	appInfo.setProcessName(processName);
-
-	//	return appInfo;
-	//}
 }
