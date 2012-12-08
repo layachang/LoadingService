@@ -37,7 +37,8 @@ public class Loading extends Activity {
 	public final static boolean MAX_MIN = false; //MAX MIN
 	public final static boolean AMOUNT_MEAN = false; //Amount
 	public final static boolean MEDIAN = false; //Median
-	public final static boolean VARIANCE = true; //VARIANCE
+	public final static boolean SD = false; //Standard Deviation
+	public final static boolean VARIANCE = false; //VARIANCE
 
 	/**Battery**/
 	public final static String STR_BATT_BATT_CURRENT_NOW = "/sys/class/power_supply/battery/batt_current_now"; //500

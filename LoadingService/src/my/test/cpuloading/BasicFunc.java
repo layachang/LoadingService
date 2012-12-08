@@ -1,5 +1,6 @@
 package my.test.cpuloading;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +29,7 @@ public abstract class BasicFunc {
 	private HashMap<Integer, Integer> mCount = new HashMap<Integer, Integer>();
 	private HashMap<Integer, Integer> mMax = new HashMap<Integer, Integer>();
 	private HashMap<Integer, Integer> mMin = new HashMap<Integer, Integer>();
-	private HashMap<Integer, Integer> mMean = new HashMap<Integer, Integer>();
+	private HashMap<Integer, Float> mMean = new HashMap<Integer, Float>();
 	private HashMap<Integer, Integer> mMedian = new HashMap<Integer, Integer>();
 	private HashMap<Integer, ArrayList<Integer>> mValues = new HashMap<Integer, ArrayList<Integer>>();
 	
@@ -95,7 +96,6 @@ public abstract class BasicFunc {
 			}
 			mAmountInt.put(index, mAmountInt.get(index)+value);
             mCount.put(index, mCount.get(index)+1);
-            
             mValues.get(index).add(value);
 		} else {
 			if(Loading.DEBUG && Loading.AMOUNT_MEAN) {
@@ -103,7 +103,6 @@ public abstract class BasicFunc {
 			}
 	        mAmountInt.put(index, value);
 	        mCount.put(index, 1);
-
 	        ArrayList<Integer> values = new ArrayList<Integer>();
 	        values.add(value);
 	        mValues.put(index, values);
@@ -127,25 +126,73 @@ public abstract class BasicFunc {
 	}
 
 	protected String getMean(int index) {
-		int mean = Math.round(mAmountInt.get(index)/mCount.get(index));
-		mMean.put(index, mean);
-		if(Loading.DEBUG && Loading.AMOUNT_MEAN)
-			Log.v(Loading.TAG,"index["+index+"], "+(Math.round(mAmountInt.get(index)))+"/"+mCount.get(index)+") = "+mean);
-		return String.valueOf(mean);
-	}
-	protected String getMedian(int index) {
-		float value;
-		ArrayList<Integer> values = mValues.get(index);
-		Collections.sort(values);
-		int num = mCount.get(index);
-		if (num%2==0) {
-			value = (values.get(num/2)+values.get((num/2)+1))/2;
+		if (mCount!=null && mCount.get(index)>0) {
+			float mean = round((float)mAmountInt.get(index)/(float)mCount.get(index));
+			mMean.put(index, mean);
+			if(Loading.DEBUG && Loading.AMOUNT_MEAN)
+				Log.v(Loading.TAG,"index["+index+"], "+(float)mAmountInt.get(index)+"/"+(float)mCount.get(index)+") = "+mean);
+			return String.valueOf(mean);
 		} else {
-			value = values.get((num/2)+1);
+			return "";
 		}
-		if(Loading.DEBUG && Loading.MEDIAN)
-			Log.v(Loading.TAG,"index["+index+"], Median="+value);
-		return String.valueOf(value);
+	}
+	private float round(float value) {
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMaximumFractionDigits(2);
+		String result = nf.format(value).replace(",", "");
+		return Float.valueOf(result);
 	}
 
+	protected String getMedian(int index) {
+		if (mCount!=null && mCount.get(index)>0) {
+			float value;
+			ArrayList<Integer> values = mValues.get(index);
+			Collections.sort(values);
+			int num = mCount.get(index);
+			String degStr = "num="+num+"; ";
+			if(Loading.DEBUG && Loading.MEDIAN) {
+				for (int i=0; i<values.size();i++) {
+					degStr+= "["+(i+1)+"]:"+values.get(i)+",";
+				}
+				Log.v(Loading.TAG,"index["+index+"], degStr="+degStr);
+			}
+			if (num%2==0) {
+				int vidx = (num/2)-1;
+				value = ((float)values.get(vidx)+(float)values.get(vidx+1))/2;
+				if(Loading.DEBUG && Loading.MEDIAN)
+					Log.v(Loading.TAG,"index["+index+"], ("+values.get(vidx)+"+"+values.get(vidx+1)+")/2="+value);
+			} else {
+				int vidx = (num/2)-1;
+				value = values.get(vidx+1);
+				if(Loading.DEBUG && Loading.MEDIAN)
+					Log.v(Loading.TAG,"index["+index+"], m="+(vidx+1)+"; value="+value);
+			}
+			if(Loading.DEBUG && Loading.MEDIAN)
+				Log.v(Loading.TAG,"index["+index+"], Median="+value);
+			return String.valueOf(value);
+		} else {
+			return "";
+		}
+	}
+
+	protected String getSD(int index) {
+		if (mCount!=null && mCount.get(index)>0) {
+			float mean = mMean.get(index);
+			double amount=0;
+
+			ArrayList<Integer> values = mValues.get(index);
+			for (int i=0; i<values.size();i++) {
+				int value=values.get(i);
+				amount+=(value-mean)*(value-mean);
+				if(Loading.DEBUG && Loading.SD)
+					Log.v(Loading.TAG,"index["+index+"], ("+value+"-"+mean+")^2="+(value-mean)*(value-mean));
+			}
+			float sd = round((float)Math.sqrt(amount/mCount.get(index)));
+			if(Loading.DEBUG && Loading.SD)
+				Log.v(Loading.TAG,"index["+index+"], Standard Deviation: "+amount+"/"+mCount.get(index)+" ="+sd);
+			return String.valueOf(sd);
+		} else {
+			return "";
+		}
+	}
 }
