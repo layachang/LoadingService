@@ -286,88 +286,56 @@ public class ProcStat extends BasicFunc {
 
     @Override
     public String getValues(int index) {
+    	int value;
         if(Loading.CPU_DEBUG)
             Log.v(Loading.TAG,BasicFunc.mClassName[index]+"/"+BasicFunc.mResourceName[index]+" getValues("+index+")");
-        if (index==CPU_ALL_INDEX) {
-            int value = getUtil();
-            recordMaxMin(CPU_ALL_INDEX, value);
-            recordMean(CPU_ALL_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_USER_INDEX) {
-            int value = getUser();
-            recordMaxMin(CPU_USER_INDEX, value);
-            recordMean(CPU_USER_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_NICE_INDEX) {
-            int value = getNice();
-            recordMaxMin(CPU_NICE_INDEX, value);
-            recordMean(CPU_NICE_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_SYS_INDEX) {
-            int value = getSys();
-            recordMaxMin(CPU_SYS_INDEX, value);
-            recordMean(CPU_SYS_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_IDLE_INDEX) {
-            int value = getIdle();
-            recordMaxMin(CPU_IDLE_INDEX, value);
-            recordMean(CPU_IDLE_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_IOWAIT_INDEX) {
-            int value = getIOW();
-            recordMaxMin(CPU_IOWAIT_INDEX, value);
-            recordMean(CPU_IOWAIT_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_IRQ_INDEX) {
-            int value = getIRQ();
-            recordMaxMin(CPU_IRQ_INDEX, value);
-            recordMean(CPU_IRQ_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_SOFTIQR_INDEX) {
-            int value = getSIRQ();
-            recordMaxMin(CPU_SOFTIQR_INDEX, value);
-            recordMean(CPU_SOFTIQR_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_INTR_INDEX) {
-            int value = getIntr();
-            recordMaxMin(CPU_INTR_INDEX, value);
-            recordMean(CPU_INTR_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_CTXT_INDEX) {
-            int value = getCtxt();
-            recordMaxMin(CPU_CTXT_INDEX, value);
-            recordMean(CPU_CTXT_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_PROC_INDEX ) {
-            int value = getProcesses();
-            recordMaxMin(CPU_PROC_INDEX , value);
-            recordMean(CPU_PROC_INDEX , value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_PROC_R_INDEX) {
-            int value = getProcsRunning();
-            recordMaxMin(CPU_PROC_R_INDEX, value);
-            recordMean(CPU_PROC_R_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==CPU_PROC_B_INDEX) {
-            int value = getProcsBlocked();
-            recordMaxMin(CPU_PROC_B_INDEX, value);
-            recordMean(CPU_PROC_B_INDEX, value);
-            return String.valueOf(value);
-
+        switch (index) {
+	        case CPU_ALL_INDEX:
+	            value = getUtil();
+	            break;
+	        case CPU_USER_INDEX:
+	            value = getUser();
+	            break;
+	        case CPU_NICE_INDEX:
+	            value = getNice();
+	            break;
+	        case CPU_SYS_INDEX:
+	            value = getSys();
+	            break;
+	        case CPU_IDLE_INDEX:
+	            value = getIdle();
+	            break;
+	        case CPU_IOWAIT_INDEX:
+	            value = getIOW();
+	            break;
+	        case CPU_IRQ_INDEX:
+	            value = getIRQ();
+	            break;
+	        case CPU_SOFTIQR_INDEX:
+	            value = getSIRQ();
+	            break;
+	        case CPU_INTR_INDEX:
+	            value = getIntr();
+	            break;
+	        case CPU_CTXT_INDEX:
+	            value = getCtxt();
+	            break;
+	        case CPU_PROC_INDEX:
+	            value = getProcesses();
+	            break;
+	        case CPU_PROC_R_INDEX:
+	            value = getProcsRunning();
+	            break;
+	        case CPU_PROC_B_INDEX:
+	            value = getProcsBlocked();
+	            break;
+	        default:
+	            return "--";
+	        
         }
-        return "--";
+        recordMaxMin(index, value);
+        recordMean(index, value);
+        return String.valueOf(value);
     }
     public String getMena() {
         float input = (mCurrCpu - init_cpu)*100 /

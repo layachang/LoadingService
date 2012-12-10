@@ -29,16 +29,22 @@ public class BasicDef {
     public static final int DISK_READ_INDEX        = 22;
     public static final int DISK_WRITE_INDEX       = 23;
     public static final int DISK_ALL_INDEX         = 24;
+    public static final int DISK_READ_RATE_INDEX   = 25;
+    public static final int DISK_WRITE_RATE_INDEX  = 26;
+    public static final int DISK_ALL_RATE_INDEX    = 27;
 
-    public static final int NET_REC_INDEX          = 25;
-    public static final int NET_TRA_INDEX          = 26;
-    public static final int NET_ALL_INDEX          = 27;
+    public static final int NET_REC_INDEX          = 28;
+    public static final int NET_TRA_INDEX          = 29;
+    public static final int NET_ALL_INDEX          = 30;
+    public static final int NET_REC_RATE_INDEX     = 31;
+    public static final int NET_TRA_RATE_INDEX     = 32;
+    public static final int NET_ALL_RATE_INDEX     = 33;
+    
+    public static final int NET_UID_INDEX          = 34;
 
-    public static final int NET_UID_INDEX          = 28;
+    public static final int AUDIO_ALL_INDEX        = 35;
 
-    public static final int AUDIO_ALL_INDEX        = 29;
-
-    public static final int BATT_ALL_INDEX         = 30;
+    public static final int BATT_ALL_INDEX         = 36;
     
     public static String[] mClassName = 
     	{"",
@@ -46,8 +52,8 @@ public class BasicDef {
         "CPU",
         "MEM","MEM","MEM","MEM","MEM","MEM",
         "MEM",
-        "DISK","DISK","DISK",
-        "NET","NET","NET",
+        "DISK","DISK","DISK","DISK","DISK","DISK",
+        "NET","NET","NET","NET","NET","NET",
         "NET",
         "AUDIO",
         "BATT"};
@@ -57,8 +63,8 @@ public class BasicDef {
         "PID",
         "USED","FREE","BUFF","CACHED","ACTIVE","INACTIVE",
         "PID",
-        "READ","WRITE","ALL",
-        "REC","TRA","ALL",
+        "READ","WRITE","ALL","READ R","WRITE R","ALL R",
+        "Rx","Tx","ALL","Rx R","Tx R","ALL R",
         "UID",
         "AUDIO",
         "BATT"};
@@ -68,9 +74,12 @@ public class BasicDef {
         "%",
         "%","%","%","%","%","%",
         "%",
-        "KB","KB","KB",
-        "KB","KB","KB",
+        "KB","KB","KB","byte/s","byte/s","byte/s",
+        "KB","KB","KB","byte/s","byte/s","byte/s",
         "KB",
         "%",
         "mW"};
+    
+    
+
 }

@@ -19,7 +19,7 @@ import android.widget.Toast;
 public class Loading extends Activity {
     /** Called when the activity is first created. */
     public final static String TAG = "LoadingService";
-    public final static boolean DEBUG = true;
+    public final static boolean DEBUG = false;
 
     public final static boolean W2SD_DEBUG        = DEBUG && true;
 

@@ -27,7 +27,7 @@ public abstract class BasicFunc extends BasicDef {
     private HashMap<Integer, Float> mVar = new HashMap<Integer, Float>();
     private HashMap<Integer, ArrayList<Integer>> mValues = new HashMap<Integer, ArrayList<Integer>>();
     private HashMap<Integer, ArrayList<Float>> mValuesFloat = new HashMap<Integer, ArrayList<Float>>();
-
+ 
     protected abstract void dumpValues();
 
     protected void insertValues(int index, ArrayList<String> output) {
@@ -147,21 +147,21 @@ public abstract class BasicFunc extends BasicDef {
     }
 
     protected String getMax(int index) {
-        if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX)
+        if (LoadingService.mFloatList.contains(index))
             return String.valueOf(mMaxFloat.get(index));
         else
             return String.valueOf(mMax.get(index));
     }
 
     protected String getMin(int index) {
-        if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX)
+    	if (LoadingService.mFloatList.contains(index))
             return String.valueOf(mMinFloat.get(index));
         else
             return String.valueOf(mMin.get(index));
     }
 
     protected String getAmount(int index) {
-        if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX)
+    	if (LoadingService.mFloatList.contains(index))
             return String.valueOf(mAmountFloat.get(index));
         else
             return String.valueOf(mAmountInt.get(index));
@@ -171,7 +171,7 @@ public abstract class BasicFunc extends BasicDef {
         if (mCount!=null &&
                 mCount.get(index) !=null &&
                 mCount.get(index)>0) {
-            if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX) {
+        	if (LoadingService.mFloatList.contains(index)) {
                 float mean = round(mAmountFloat.get(index)/(float)mCount.get(index),2);
                 mMean.put(index, mean);
                 if(Loading.AMOUNT_MEAN)
@@ -195,6 +195,7 @@ public abstract class BasicFunc extends BasicDef {
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(dig);
         String result = nf.format(value).replace(",", "");
+        Log.v(Loading.TAG, "round("+value+","+dig+"), format="+nf.format(value)+"; return="+result);
         return Float.valueOf(result);
     }
 
@@ -210,11 +211,11 @@ public abstract class BasicFunc extends BasicDef {
                 mCount.get(index) !=null &&
                 mCount.get(index)>0) {
             float value;
-            if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX) {
+            if (LoadingService.mFloatList.contains(index)) {
                 ArrayList<Float> values = mValuesFloat.get(index);
                 Collections.sort(values);
                 int num = mCount.get(index);
-                String degStr = "num="+num+"; ";
+                String degStr = "mValuesFloat, num="+num+"; ";
                 if(Loading.MEDIAN) {
                     for (int i=0; i<values.size();i++) {
                         degStr+= "["+(i+1)+"]:"+values.get(i)+",";
@@ -225,40 +226,40 @@ public abstract class BasicFunc extends BasicDef {
                     int vidx = (num/2)-1;
                     value = (values.get(vidx)+values.get(vidx+1))/2;
                     if(Loading.MEDIAN)
-                        Log.v(Loading.TAG,"index["+index+"], ("+values.get(vidx)+"+"+values.get(vidx+1)+")/2="+value);
+                        Log.v(Loading.TAG,"mValuesFloat["+index+"], ("+values.get(vidx)+"+"+values.get(vidx+1)+")/2="+value);
                 } else {
                     int vidx = (num/2)-1;
                     value = values.get(vidx+1);
                     if(Loading.MEDIAN)
-                        Log.v(Loading.TAG,"index["+index+"], m="+(vidx+1)+"; value="+value);
+                        Log.v(Loading.TAG,"mValuesFloat["+index+"], m="+(vidx+1)+"; value="+value);
                 }
                 if(Loading.MEDIAN)
-                    Log.v(Loading.TAG,"index["+index+"], Median="+value);
+                    Log.v(Loading.TAG,"mValuesFloat["+index+"], Median="+value);
                 return String.valueOf(value);
             } else {
                 ArrayList<Integer> values = mValues.get(index);
                 Collections.sort(values);
                 int num = mCount.get(index);
-                String degStr = "num="+num+"; ";
+                String degStr = "mValues, num="+num+"; ";
                 if(Loading.MEDIAN) {
                     for (int i=0; i<values.size();i++) {
                         degStr+= "["+(i+1)+"]:"+values.get(i)+",";
                     }
-                    Log.v(Loading.TAG,"index["+index+"], degStr="+degStr);
+                    Log.v(Loading.TAG,"mValues["+index+"], degStr="+degStr);
                 }
                 if (num%2==0) {
                     int vidx = (num/2)-1;
                     value = ((float)values.get(vidx)+(float)values.get(vidx+1))/2;
                     if(Loading.MEDIAN)
-                        Log.v(Loading.TAG,"index["+index+"], ("+values.get(vidx)+"+"+values.get(vidx+1)+")/2="+value);
+                        Log.v(Loading.TAG,"mValues["+index+"], ("+values.get(vidx)+"+"+values.get(vidx+1)+")/2="+value);
                 } else {
                     int vidx = (num/2)-1;
                     value = values.get(vidx+1);
                     if(Loading.MEDIAN)
-                        Log.v(Loading.TAG,"index["+index+"], m="+(vidx+1)+"; value="+value);
+                        Log.v(Loading.TAG,"mValues["+index+"], m="+(vidx+1)+"; value="+value);
                 }
                 if(Loading.MEDIAN)
-                    Log.v(Loading.TAG,"index["+index+"], Median="+value);
+                    Log.v(Loading.TAG,"mValues["+index+"], Median="+value);
                 return String.valueOf(value);
             }
         } else {
@@ -272,7 +273,7 @@ public abstract class BasicFunc extends BasicDef {
         if (mCount!=null &&
                 mCount.get(index)!=null &&
                 mCount.get(index)>0) {
-            if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX) {
+        	if (LoadingService.mFloatList.contains(index)) {
                 ArrayList<Float> values = mValuesFloat.get(index);
                 for (int i=0; i<values.size();i++) {
                     float value=values.get(i);

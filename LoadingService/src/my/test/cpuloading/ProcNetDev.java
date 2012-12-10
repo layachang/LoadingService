@@ -104,6 +104,9 @@ public class ProcNetDev extends BasicFunc {
     private int mVarReW0Bytes;
     private int mVarTranW0Bytes;
 
+    private long mLastTime=-1;
+    private long mCurrTime=-1;
+
     public ProcNetDev(int line_num) {
         READ_LINE= line_num;
         Log.v(Loading.TAG, "ProcNetDev, line_num"+line_num); 
@@ -141,6 +144,14 @@ public class ProcNetDev extends BasicFunc {
             String load = null;
             ArrayList<String> result;
             RandomAccessFile reader = new RandomAccessFile(Loading.STR_NET_DEV, "r");
+            long curr = System.currentTimeMillis();
+            if (mLastTime==-1) {
+            	mCurrTime = mLastTime = curr;
+            } else {
+            	mLastTime = mCurrTime;
+            	mCurrTime = curr;
+            }
+
             for (int i=0; i< READ_LINE;i++ ) {
                 load = reader.readLine();
                 if (Loading.NET_DEBUG) Log.v(Loading.TAG, i+":"+load); 
@@ -218,32 +229,51 @@ public class ProcNetDev extends BasicFunc {
     protected String getValues(int index) {
         if(Loading.NET_DEBUG)
             Log.v(Loading.TAG,BasicFunc.mClassName[index]+"/"+BasicFunc.mResourceName[index]+" getValues("+index+")");
-        if (index==NET_ALL_INDEX) {
-            float total = round((mVarTranW0Bytes+mVarReW0Bytes)/1024,3);
-            if(Loading.NET_DEBUG)
-                Log.v(Loading.TAG,
-                    "NET_ALL_INDEX: ("+mVarTranW0Bytes+"+"+mVarReW0Bytes+")/1024="+total);
-            recordMaxMin(NET_ALL_INDEX, total);
-            recordMean(NET_ALL_INDEX, total);
-            return String.valueOf(total);
-        } else if (index==NET_REC_INDEX) {
-            float total = round(getReceiveWlan0Bytes()/1024,3);
-            if(Loading.NET_DEBUG)
-                Log.v(Loading.TAG,
-                    "NET_REC_INDEX: "+mVarReW0Bytes+"/1024="+total);
-            recordMaxMin(NET_REC_INDEX, total);
-            recordMean(NET_REC_INDEX, total);
-            return String.valueOf(total);
-        } else if (index==NET_TRA_INDEX) {
-            float total = round(getTransmitWlan0Bytes()/1024,3);
-            if(Loading.NET_DEBUG)
-                Log.v(Loading.TAG,
-                    "NET_TRA_INDEX: "+mVarTranW0Bytes+"/1024="+total);
-            recordMaxMin(NET_TRA_INDEX, total);
-            recordMean(NET_TRA_INDEX, total);
-            return String.valueOf(total);
+        float value = 0;
+    	float time = (float) (mCurrTime-mLastTime);
+    	if (LoadingService.mFloatList.contains(index) && time==0) return "--";
+
+        switch (index) {
+        	case NET_ALL_INDEX:
+        		value = round((float)(mVarTranW0Bytes+mVarReW0Bytes)/(float)1024,3);
+        		break;
+        	case NET_REC_INDEX:
+        		value = round((float)getReceiveWlan0Bytes()/(float)1024,3);
+        		break;
+        	case NET_TRA_INDEX:
+        		value = round((float)getTransmitWlan0Bytes()/(float)1024,3);
+        		break;
+        	case NET_ALL_RATE_INDEX:
+                if(Loading.NET_DEBUG)
+                    Log.v(Loading.TAG,"NET_ALL_RATE_INDEX: "+(mVarTranW0Bytes+mVarReW0Bytes)+" / "+time+")");
+                if (mVarTranW0Bytes>0 || mVarReW0Bytes>0) {
+                	value = round( (mVarTranW0Bytes+mVarReW0Bytes) / time,3);
+                } else {
+                	value = 0;
+                }
+        		break;
+        	case NET_REC_RATE_INDEX:
+                if(Loading.NET_DEBUG)
+                    Log.v(Loading.TAG,"NET_REC_RATE_INDEX: "+mVarReW0Bytes+" / "+time+")");
+                if (mVarReW0Bytes>0) {
+                	value = round( mVarReW0Bytes / time,3);
+                } else {
+                	value = 0;
+                }
+        		break;
+        	case NET_TRA_RATE_INDEX:
+                if(Loading.NET_DEBUG)
+                    Log.v(Loading.TAG,"NET_TRA_RATE_INDEX: "+mVarTranW0Bytes+" / "+time+")");
+                if (mVarTranW0Bytes>0) {
+                	value = round( mVarTranW0Bytes / time,3);
+                } else {
+                	value = 0;
+                }
+        		break;
         }
-        return "--";
+        recordMaxMin(index, value);
+        recordMean(index, value);
+        return String.valueOf(value);
     }
     public int getAmount() {
         int result = (mCuReW0Bytes-initReW0Bytes) - (mCuTranW0Bytes-initTranW0Bytes);

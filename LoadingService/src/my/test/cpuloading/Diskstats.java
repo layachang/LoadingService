@@ -93,6 +93,9 @@ public class Diskstats extends BasicFunc {
     private int mWriteAmount=0;
     private int mSectorReadVar = 0;
     private int mSectorWriteVar = 0;
+    
+    private long mLastTime=-1;
+    private long mCurrTime=-1;
 
     public Diskstats(String cache, String system, String data, int size) {
         KEY_CACHE = cache;
@@ -108,6 +111,13 @@ public class Diskstats extends BasicFunc {
         ArrayList<String> result = null;
         try {
             RandomAccessFile reader = new RandomAccessFile(Loading.STR_DISK_DISKSTATE, "r");
+            long curr = System.currentTimeMillis();
+            if (mLastTime==-1) {
+            	mCurrTime = mLastTime = curr;
+            } else {
+            	mLastTime = mCurrTime;
+            	mCurrTime = curr;
+            }
             for(;;){
                 String load = reader.readLine();
                 if(Loading.DISK_DEBUG) Log.v(Loading.TAG, "load: "+load); 
@@ -208,24 +218,64 @@ public class Diskstats extends BasicFunc {
     }
  
     protected String getValues(int index){
+    	int value = 0;
+    	float fvalue = 0;
+    	float time = (float) (mCurrTime-mLastTime);
+    	if (LoadingService.mFloatList.contains(index) && time==0) return "--";
+    	
         if(Loading.DISK_DEBUG)
             Log.v(Loading.TAG,BasicFunc.mClassName[index]+"/"+BasicFunc.mResourceName[index]+" getValues("+index+")");
-        if (index==DISK_READ_INDEX) {
-            final int read = getSectorsRead() * mSize;
-            recordMaxMin(DISK_READ_INDEX, read);
-            recordMean(DISK_READ_INDEX, read);
-            return String.valueOf(read);
-        } else if (index==DISK_WRITE_INDEX) {
-            final int write = getSectorsWrite() * mSize;
-            recordMaxMin(DISK_WRITE_INDEX, write);
-            recordMean(DISK_WRITE_INDEX, write);
-            return String.valueOf(write);
-        } else if (index==DISK_ALL_INDEX) {
-            final int totla = (mSectorWriteVar + mSectorReadVar) * mSize;
-            recordMaxMin(DISK_ALL_INDEX, totla);
-            recordMean(DISK_ALL_INDEX, totla);
-            return String.valueOf(totla);
+        switch(index) {
+            case DISK_READ_INDEX:
+	            value = getSectorsRead() * mSize;
+	            break;
+            case DISK_WRITE_INDEX:
+                value = getSectorsWrite() * mSize;
+                break;
+            case DISK_ALL_INDEX:
+                value = (mSectorWriteVar + mSectorReadVar) * mSize;
+                break;
+            case DISK_READ_RATE_INDEX:
+                if(Loading.DISK_DEBUG)
+                    Log.v(Loading.TAG,"DISK_READ_RATE_INDEX: "+mSectorReadVar+" * "+mSize+" *1024 / "+time+")");
+                if (mSectorReadVar>0) {
+                	fvalue = round(mSectorReadVar * mSize *1024 / time,2);
+                } else {
+                	fvalue = 0;
+                }
+                break;
+            case DISK_WRITE_RATE_INDEX:
+                if(Loading.DISK_DEBUG)
+                    Log.v(Loading.TAG,"DISK_WRITE_RATE_INDEX: "+mSectorWriteVar+" * "+mSize+" *1024 / "+time+")");
+                if (mSectorWriteVar>0) {
+                	fvalue = round(mSectorWriteVar * mSize *1024 / time,2);
+                } else {
+                	fvalue = 0;
+                }
+                
+                break;
+            case DISK_ALL_RATE_INDEX:
+                if(Loading.DISK_DEBUG)
+                    Log.v(Loading.TAG,"DISK_ALL_RATE_INDEX: "+(mSectorWriteVar + mSectorReadVar)+" * "+mSize+" *1024 / "+time+")");
+                if (mSectorWriteVar>0 || mSectorReadVar>0) {
+                	fvalue = round((mSectorWriteVar + mSectorReadVar) * mSize *1024 / time,2);
+                } else {
+                	fvalue = 0;
+                }
+
+                break;
+            default:
+            	return "--";
         }
-        return "--";
+        
+        if (LoadingService.mFloatList.contains(index)) {
+        	recordMaxMin(index, fvalue);
+        	recordMean(index, fvalue);
+        	return String.valueOf(fvalue);
+        } else {
+        	recordMaxMin(index, value);
+        	recordMean(index, value);
+        	return String.valueOf(value);
+        }
     }
 }

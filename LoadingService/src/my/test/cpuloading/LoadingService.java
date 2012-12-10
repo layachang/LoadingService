@@ -48,6 +48,7 @@ public class LoadingService extends Service  {
     private static String[] mBattHealth = {"n/a","UNKNOWN","GOOD","OVERHEAT","DEAD","OVER_VOLTAGE","UNSPECIFIED_FAILURE","COLD"} ;
 
     private HashMap<String,ArrayList<Integer>> mResources = new HashMap<String,ArrayList<Integer>>();
+    public static ArrayList<Integer> mFloatList = new ArrayList<Integer>();
 
     @Override
     public void onStart(Intent intent, int startId) {
@@ -57,8 +58,19 @@ public class LoadingService extends Service  {
         Log.v(Loading.TAG,"onStart() SDK="+VERSION.SDK_INT);
         handler.post(catchData);
         estResTree();
+        setFloat();
     }
-
+    public void setFloat() {
+    	mFloatList.add(BasicDef.DISK_READ_RATE_INDEX);
+    	mFloatList.add(BasicDef.DISK_WRITE_RATE_INDEX);
+    	mFloatList.add(BasicDef.DISK_ALL_RATE_INDEX);
+    	mFloatList.add(BasicDef.NET_REC_INDEX);
+    	mFloatList.add(BasicDef.NET_TRA_INDEX);
+    	mFloatList.add(BasicDef.NET_ALL_INDEX);
+    	mFloatList.add(BasicDef.NET_REC_RATE_INDEX);
+    	mFloatList.add(BasicDef.NET_TRA_RATE_INDEX);
+    	mFloatList.add(BasicDef.NET_ALL_RATE_INDEX);
+    }
     private void estResTree() {
         ArrayList<Integer> cpu_all = new ArrayList<Integer>();
         cpu_all.add(BasicFunc.CPU_ALL_INDEX);
@@ -97,12 +109,18 @@ public class LoadingService extends Service  {
         disk_all.add(BasicFunc.DISK_READ_INDEX);
         disk_all.add(BasicFunc.DISK_WRITE_INDEX);
         disk_all.add(BasicFunc.DISK_ALL_INDEX);
+        disk_all.add(BasicFunc.DISK_READ_RATE_INDEX);
+        disk_all.add(BasicFunc.DISK_WRITE_RATE_INDEX);
+        disk_all.add(BasicFunc.DISK_ALL_RATE_INDEX);
         mResources.put("DiskAll", disk_all);
 
         ArrayList<Integer> net_all = new ArrayList<Integer>();
         net_all.add(BasicFunc.NET_REC_INDEX);
         net_all.add(BasicFunc.NET_TRA_INDEX);
         net_all.add(BasicFunc.NET_ALL_INDEX);
+        net_all.add(BasicFunc.NET_REC_RATE_INDEX);
+        net_all.add(BasicFunc.NET_TRA_RATE_INDEX);
+        net_all.add(BasicFunc.NET_ALL_RATE_INDEX);
         mResources.put("NetAll", net_all);
 
         ArrayList<Integer> net_uid = new ArrayList<Integer>();
