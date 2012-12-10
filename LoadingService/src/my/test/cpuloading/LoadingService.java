@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 public class LoadingService extends Service  {
     private Handler handler = new Handler();
-
+    private int TIME_SLOT = 500;
     private String KEY_CACHE = "";
     private String KEY_SYSTEM = "";
     private String KEY_DATA = "";
@@ -30,7 +30,8 @@ public class LoadingService extends Service  {
     private int mUID=0;
     private boolean hasValue = false;
     private boolean mFirst = true;
-    private static long mStartTime=0;
+    private long mStartTime=0;
+    private long mLastTime=0;
 
     private static WriteFile2SD wfile;
     private ProcStat mCpuAll;
@@ -50,16 +51,29 @@ public class LoadingService extends Service  {
 
     @Override
     public void onStart(Intent intent, int startId) {
+        mLastTime = mStartTime = System.currentTimeMillis();
         handleCommand(intent);
         startCacheData();
         Log.v(Loading.TAG,"onStart() SDK="+VERSION.SDK_INT);
-        handler.postDelayed(catchData, 800);
+        handler.post(catchData);
         estResTree();
     }
 
     private void estResTree() {
         ArrayList<Integer> cpu_all = new ArrayList<Integer>();
         cpu_all.add(BasicFunc.CPU_ALL_INDEX);
+        cpu_all.add(BasicFunc.CPU_USER_INDEX);
+        cpu_all.add(BasicFunc.CPU_NICE_INDEX);
+        cpu_all.add(BasicFunc.CPU_SYS_INDEX);
+        cpu_all.add(BasicFunc.CPU_IDLE_INDEX);
+        cpu_all.add(BasicFunc.CPU_IOWAIT_INDEX);
+        cpu_all.add(BasicFunc.CPU_IRQ_INDEX);
+        cpu_all.add(BasicFunc.CPU_SOFTIQR_INDEX);
+        cpu_all.add(BasicFunc.CPU_INTR_INDEX);
+        cpu_all.add(BasicFunc.CPU_CTXT_INDEX);
+        cpu_all.add(BasicFunc.CPU_PROC_INDEX);
+        cpu_all.add(BasicFunc.CPU_PROC_R_INDEX);
+        cpu_all.add(BasicFunc.CPU_PROC_B_INDEX);
         mResources.put("CpuAll", cpu_all);
 
         ArrayList<Integer> cpu_pid = new ArrayList<Integer>();
@@ -166,7 +180,7 @@ public class LoadingService extends Service  {
                 dumpValues();
                 printValues();
                 if (isPkgAvaliable(mProcessName)) {
-                    handler.postDelayed(this, 300);
+                    handler.postDelayed(this, TIME_SLOT);
                 } else {
                     stopSelf();
                 }
@@ -174,7 +188,7 @@ public class LoadingService extends Service  {
                 getPIDUIDByPKG(mProcessName);
                 dumpValues();
                 printValues();
-                handler.postDelayed(this, 300);
+                handler.postDelayed(this, TIME_SLOT);
             }
         }
     };
@@ -247,7 +261,6 @@ public class LoadingService extends Service  {
         }
         ArrayList<Integer> net_all = mResources.get("NetAll");
         for (int i: net_all) {
-            Log.v(Loading.TAG,"mNetAll.getValues("+i+")");
             input.append(mNetAll.getValues(i)); input.append(",");
         }
         ArrayList<Integer> net_uid = mResources.get("NetUid");

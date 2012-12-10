@@ -21,23 +21,23 @@ public class Loading extends Activity {
     public final static String TAG = "LoadingService";
     public final static boolean DEBUG = true;
 
-    public final static boolean W2SD_DEBUG         = DEBUG && true;
+    public final static boolean W2SD_DEBUG        = DEBUG && true;
 
     public final static boolean CPU_DEBUG         = DEBUG && false; //ProcState
     public final static boolean CPU_PID_DEBUG     = DEBUG && false; //ProcState
     public final static boolean MEM_DEBUG         = DEBUG && false; //MemInfo
     public final static boolean MEM_PID_DEBUG     = DEBUG && false; //MemInfo
-    public final static boolean DISK_DEBUG         = DEBUG && true; //DiskState
+    public final static boolean DISK_DEBUG        = DEBUG && false; //DiskState
     public final static boolean NET_DEBUG         = DEBUG && false; //ProcNetDev
     public final static boolean NET_UID_DEBUG     = DEBUG && false; //ProcNetDev
-    public final static boolean BATT_DEBUG         = DEBUG && false; //BattInfoProc
-    public final static boolean BLUE_DEBUG         = DEBUG && false; //Bluetooth
-    public final static boolean AUDIO_DEBUG     = DEBUG && false; //Audio
-    public final static boolean MAX_MIN         = DEBUG && false; //MAX MIN
-    public final static boolean AMOUNT_MEAN     = DEBUG && true; //Amount
-    public final static boolean MEDIAN             = DEBUG && false; //Median
-    public final static boolean SD                 = DEBUG && false; //Standard Deviation
-    public final static boolean VARIANCE         = DEBUG && false; //VARIANCE
+    public final static boolean BATT_DEBUG        = DEBUG && false; //BattInfoProc
+    public final static boolean BLUE_DEBUG        = DEBUG && false; //Bluetooth
+    public final static boolean AUDIO_DEBUG       = DEBUG && false; //Audio
+    public final static boolean MAX_MIN           = DEBUG && false; //MAX MIN
+    public final static boolean AMOUNT_MEAN       = DEBUG && false; //Amount
+    public final static boolean MEDIAN            = DEBUG && false; //Median
+    public final static boolean SD                = DEBUG && false; //Standard Deviation
+    public final static boolean VARIANCE          = DEBUG && false; //VARIANCE
 
     /**Battery**/
     public final static String STR_BATT_BATT_CURRENT_NOW = "/sys/class/power_supply/battery/batt_current_now"; //500

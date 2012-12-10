@@ -216,7 +216,7 @@ public class ProcNetDev extends BasicFunc {
     }
     @Override
     protected String getValues(int index) {
-        if(Loading.CPU_DEBUG)
+        if(Loading.NET_DEBUG)
             Log.v(Loading.TAG,BasicFunc.mClassName[index]+"/"+BasicFunc.mResourceName[index]+" getValues("+index+")");
         if (index==NET_ALL_INDEX) {
             float total = round((mVarTranW0Bytes+mVarReW0Bytes)/1024,3);
@@ -226,7 +226,7 @@ public class ProcNetDev extends BasicFunc {
             recordMaxMin(NET_ALL_INDEX, total);
             recordMean(NET_ALL_INDEX, total);
             return String.valueOf(total);
-        } else     if (index==NET_REC_INDEX) {
+        } else if (index==NET_REC_INDEX) {
             float total = round(getReceiveWlan0Bytes()/1024,3);
             if(Loading.NET_DEBUG)
                 Log.v(Loading.TAG,
@@ -234,7 +234,7 @@ public class ProcNetDev extends BasicFunc {
             recordMaxMin(NET_REC_INDEX, total);
             recordMean(NET_REC_INDEX, total);
             return String.valueOf(total);
-        } else     if (index==NET_TRA_INDEX) {
+        } else if (index==NET_TRA_INDEX) {
             float total = round(getTransmitWlan0Bytes()/1024,3);
             if(Loading.NET_DEBUG)
                 Log.v(Loading.TAG,

@@ -14,12 +14,24 @@ public class ProcStat extends BasicFunc {
     private int mProcs_blocked;
     private long mLastIdle = 0;
     private long mCurrIdle = 0;
-    private long mInitIdle = 0;
     private long mLastCpu = 0;
     private long mCurrCpu = 0;
-    private long mInitCpu = 0;
-
-    
+    private long mLastUser = -1;
+    private long mCurrUser = 0;
+    private long mLastNice = -1;
+    private long mCurrNice = 0;
+    private long mLastSys = -1;
+    private long mCurrSys = 0;
+    private long mLastIdl = -1;
+    private long mCurrIdl = 0;
+    private long mLastIOW = -1;
+    private long mCurrIOW = 0;
+    private long mLastIRQ = -1;
+    private long mCurrIRQ = 0;
+    private long mLastSIRQ = -1;
+    private long mCurrSIRQ = 0;
+    private long mLastIntr = -1;
+    private long mCurrIntr = 0;
     /* user: 一般跑在user mode下的processes
      * nice: 跑在user mode下的nice processes
      * system: 執行在kernel mode下的processes
@@ -45,6 +57,9 @@ public class ProcStat extends BasicFunc {
      * procs_blocked 0
      * 
      */
+    private long init_cpu=-1;
+    private long inti_idle=-1;
+    private long init_intr=-1;
     private int init_ctxt=-1;
     private int init_processes=-1;
     private int init_procs_running=-1;
@@ -69,14 +84,19 @@ public class ProcStat extends BasicFunc {
             String load = reader.readLine();
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "1:"+load);
-            
+
             String[] toks = load.split(" ");
             mCurrIdle = getIdle(toks);
+            if (inti_idle==-1) inti_idle = mCurrIdle;
+
             mCurrCpu = getCpu(toks);
+            if (init_cpu==-1) init_cpu = mCurrIdle;
+
             if(Loading.CPU_DEBUG) {
                 Log.v(Loading.TAG, "mCurrIdle:"+mCurrIdle);
                 Log.v(Loading.TAG, "mCurrCpu:"+mCurrCpu);
             }
+
             load = reader.readLine(); //cpu0
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "cpu0:"+load);
@@ -94,9 +114,14 @@ public class ProcStat extends BasicFunc {
                     }
                 }
             }
+
             if(!isIntrLoad) load = reader.readLine(); //intr
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "intr:"+load);
+            toks = load.split(" ");
+            mCurrIntr = Integer.parseInt(toks[1]);
+            if (init_intr==-1) init_intr = mCurrIntr;
+
             load = reader.readLine(); //ctxt
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "ctxt:"+load);
@@ -107,6 +132,7 @@ public class ProcStat extends BasicFunc {
             load = reader.readLine(); //btime
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "btime:"+load);
+
             load = reader.readLine(); //processes -- 累計所有cpus的context switches次數
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "processes:"+load);
@@ -119,13 +145,15 @@ public class ProcStat extends BasicFunc {
                 Log.v(Loading.TAG, "procs_running:"+load);
             toks = load.split(" ");
             mProcs_running = Integer.parseInt(toks[1]);
-            
+            if (init_procs_running==-1) init_procs_running = mProcs_running;
+
             load = reader.readLine(); //procs_blocked -- 記錄當下有多少process被block住等待I/O服務完成
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "procs_blocked:"+load);
-            
             toks = load.split(" ");
             mProcs_blocked = Integer.parseInt(toks[1]);
+            if (init_procs_blocked==-1) init_procs_blocked = mProcs_blocked;
+
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "-------------------------");
             reader.close();
@@ -142,32 +170,28 @@ public class ProcStat extends BasicFunc {
     }
 
     private long getIdle(String[] toks) {
-        long l = Long.parseLong(toks[5]);
-        if (mInitIdle!=0) {
-            return l;
-        } else {
-            mInitIdle = l;
-            return l;
+        mCurrIdl = Long.parseLong(toks[5]);
+        if (mLastIdl==-1) {
+            mLastIdl = mCurrIdl;
         }
-
+        int var =  (int) (mCurrIdl - mLastIdl);
+        mLastIdl = mCurrIdl;
+        return mCurrIdl;
     }
 
     private long getCpu(String[] toks) {
-        long l = Long.parseLong(toks[2]) + Long.parseLong(toks[3]) + Long.parseLong(toks[4])
-                  + Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
+        mCurrUser = Long.parseLong(toks[2]);
+        mCurrNice = Long.parseLong(toks[3]);
+        mCurrSys = Long.parseLong(toks[4]);
+        mCurrIOW = Long.parseLong(toks[6]);
+        mCurrIRQ = Long.parseLong(toks[7]);
+        mCurrSIRQ = Long.parseLong(toks[8]);
+        long l = mCurrUser + mCurrNice + mCurrSys + mCurrIOW + mCurrIRQ + mCurrSIRQ;
         if(Loading.CPU_DEBUG)
-            Log.v(Loading.TAG,     Long.parseLong(toks[2]) +"+"+
-                                Long.parseLong(toks[3]) +"+"+
-                                Long.parseLong(toks[4]) +"+"+
-                                Long.parseLong(toks[6]) +"+"+
-                                Long.parseLong(toks[7]) +"+"+
-                                Long.parseLong(toks[8])+" = " + String.valueOf(l));
-        if (mInitCpu!=0) {
-            return l;
-        } else {
-            mInitCpu = l;
-            return l;
-        }
+            Log.v(Loading.TAG,  mCurrUser +"+"+mCurrNice +"+"+mCurrSys +"+"+mCurrIOW +"+"+
+                                mCurrIRQ +"+"+mCurrSIRQ +" = " + String.valueOf(l));
+        return l;
+
     }
 
     private int getUtil() {
@@ -177,30 +201,181 @@ public class ProcStat extends BasicFunc {
         return result;
     }
 
-    private int getCtxt() { return mCurrCtxt-init_ctxt; }
-    private int getProcesses() { return mCurrProcesses; }
+    private int getUser() {
+        if (mLastUser==-1) {
+            mLastUser = mCurrUser;
+        }
+        int var =  (int) (mCurrUser - mLastUser);
+        mLastUser = mCurrUser;
+        return var;
+    }
+    private int getNice() {
+        if (mLastNice==-1) {
+            mLastNice = mCurrNice;
+        }
+        int var =  (int) (mCurrNice - mLastNice);
+        mLastNice = mCurrNice;
+        return var;
+    }
+    private int getSys() {
+        if (mLastSys==-1) {
+            mLastSys = mCurrSys;
+        }
+        int var =  (int) (mCurrSys - mLastSys);
+        mLastSys = mCurrSys;
+        return var;
+    }
+    private int getIdle() {
+        if (mLastIdl==-1) {
+            mLastIdl = mCurrIdl;
+        }
+        int var =  (int) (mCurrIdl - mLastIdl);
+        mLastIdl = mCurrIdl;
+        return var;
+    }
+    private int getIOW() {
+        if (mLastIOW==-1) {
+            mLastIOW = mCurrIOW;
+        }
+        int var =  (int) (mCurrIOW - mLastIOW);
+        mLastIOW = mCurrIOW;
+        return var;
+    }
+    private int getIRQ() {
+        if (mLastIRQ==-1) {
+            mLastIRQ = mCurrIRQ;
+        }
+        int var =  (int) (mCurrIRQ - mLastIRQ);
+        mLastIRQ = mCurrIRQ;
+        return var;
+    }
+    private int getSIRQ() {
+        if (mLastSIRQ==-1) {
+            mLastSIRQ = mCurrSIRQ;
+        }
+        int var =  (int) (mCurrSIRQ - mLastSIRQ);
+        mLastSIRQ = mCurrSIRQ;
+        return var;
+    }
+    private int getIntr() {
+        if (mLastIntr==-1) {
+            mLastIntr = mCurrIntr;
+        }
+        int var =  (int) (mCurrIntr - mLastIntr);
+        mLastIntr = mCurrIntr;
+        return var;
+    }
+    private int getCtxt() {
+        if (mLastCtxt==-1) {
+            mLastCtxt = mCurrCtxt;
+        }
+        int var =  (int) (mCurrCtxt - mLastCtxt);
+        mLastCtxt = mCurrCtxt;
+        return var;
+    }
+    private int getProcesses() {
+        if (mLastProcesses==-1) {
+            mLastProcesses = mCurrProcesses;
+        }
+        int var =  (int) (mCurrProcesses - mLastProcesses);
+        mLastProcesses = mCurrProcesses;
+        return var;
+    }
     private int getProcsRunning() { return mProcs_running; }
-    private int getProcsBlocked() { return mProcs_blocked;     }
+    private int getProcsBlocked() { return mProcs_blocked; }
 
     @Override
     public String getValues(int index) {
         if(Loading.CPU_DEBUG)
             Log.v(Loading.TAG,BasicFunc.mClassName[index]+"/"+BasicFunc.mResourceName[index]+" getValues("+index+")");
         if (index==CPU_ALL_INDEX) {
-            final int utilization = getUtil();
-            recordMaxMin(CPU_ALL_INDEX, utilization);
-            recordMean(CPU_ALL_INDEX, utilization);
-            return String.valueOf(utilization);
+            int value = getUtil();
+            recordMaxMin(CPU_ALL_INDEX, value);
+            recordMean(CPU_ALL_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_USER_INDEX) {
+            int value = getUser();
+            recordMaxMin(CPU_USER_INDEX, value);
+            recordMean(CPU_USER_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_NICE_INDEX) {
+            int value = getNice();
+            recordMaxMin(CPU_NICE_INDEX, value);
+            recordMean(CPU_NICE_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_SYS_INDEX) {
+            int value = getSys();
+            recordMaxMin(CPU_SYS_INDEX, value);
+            recordMean(CPU_SYS_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_IDLE_INDEX) {
+            int value = getIdle();
+            recordMaxMin(CPU_IDLE_INDEX, value);
+            recordMean(CPU_IDLE_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_IOWAIT_INDEX) {
+            int value = getIOW();
+            recordMaxMin(CPU_IOWAIT_INDEX, value);
+            recordMean(CPU_IOWAIT_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_IRQ_INDEX) {
+            int value = getIRQ();
+            recordMaxMin(CPU_IRQ_INDEX, value);
+            recordMean(CPU_IRQ_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_SOFTIQR_INDEX) {
+            int value = getSIRQ();
+            recordMaxMin(CPU_SOFTIQR_INDEX, value);
+            recordMean(CPU_SOFTIQR_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_INTR_INDEX) {
+            int value = getIntr();
+            recordMaxMin(CPU_INTR_INDEX, value);
+            recordMean(CPU_INTR_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_CTXT_INDEX) {
+            int value = getCtxt();
+            recordMaxMin(CPU_CTXT_INDEX, value);
+            recordMean(CPU_CTXT_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_PROC_INDEX ) {
+            int value = getProcesses();
+            recordMaxMin(CPU_PROC_INDEX , value);
+            recordMean(CPU_PROC_INDEX , value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_PROC_R_INDEX) {
+            int value = getProcsRunning();
+            recordMaxMin(CPU_PROC_R_INDEX, value);
+            recordMean(CPU_PROC_R_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==CPU_PROC_B_INDEX) {
+            int value = getProcsBlocked();
+            recordMaxMin(CPU_PROC_B_INDEX, value);
+            recordMean(CPU_PROC_B_INDEX, value);
+            return String.valueOf(value);
+
         }
         return "--";
     }
     public String getMena() {
-        float input = (mCurrCpu - mInitCpu)*100 /
-                ((mCurrCpu + mCurrIdle) - (mInitCpu + mInitIdle)) ;
+        float input = (mCurrCpu - init_cpu)*100 /
+                ((mCurrCpu + mCurrIdle) - (init_cpu + inti_idle)) ;
         if(Loading.AMOUNT_MEAN)
         Log.v(Loading.TAG,
-                    "input:"+input+", ("+mCurrCpu+"-"+mInitCpu+")*100 / " +
-                            "(("+mCurrCpu+"-"+mCurrIdle+")-("+mInitCpu+" + "+mInitIdle+"))");
+                    "input:"+input+", ("+mCurrCpu+"-"+init_cpu+")*100 / " +
+                            "(("+mCurrCpu+"-"+mCurrIdle+")-("+init_cpu+" + "+inti_idle+"))");
         return String.valueOf(Math.round(input));
     }
 }
