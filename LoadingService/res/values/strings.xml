@@ -6,12 +6,12 @@
     <string name="choose_devices">Choose your device</string>
     <string name="input_filename">InputFileName</string>
     <string name="str_d1">SAMSUNG S2</string>
-	<string name="str_d2">GT-P6800</string>
-	<string name="str_d3">GT-P6810</string>
-	<string name="str_d4">GT-P1000</string>
-	<string name="str_d5">ACER Picasa MF</string>
-	<string name="start_service">Start Service</string>
-	<string name="stop_service">Stop Service</string>
-	<string name="len1file">LEN_60_</string>
-	<string name="len2file">LEN_606_</string>
+    <string name="str_d2">GT-P6800</string>
+    <string name="str_d3">GT-P6810</string>
+    <string name="str_d4">GT-P1000</string>
+    <string name="str_d5">ACER Picasa MF</string>
+    <string name="start_service">Start Service</string>
+    <string name="stop_service">Stop Service</string>
+    <string name="len1file">LEN_60_</string>
+    <string name="len2file">LEN_606_</string>
 </resources>

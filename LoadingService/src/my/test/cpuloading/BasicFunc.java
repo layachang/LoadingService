@@ -7,210 +7,323 @@ import java.util.HashMap;
 
 import android.util.Log;
 
-public abstract class BasicFunc {
-	public static final int CPU_ALL_INDEX = 1;
-	public static final int CPU_PID_INDEX = 2;
-	public static final int MEM_ALL_INDEX = 3;
-	public static final int MEM_PID_INDEX = 4;
-	public static final int DISK_ALL_INDEX = 5;
-	public static final int DISK_READ_INDEX = 6;
-	public static final int DISK_WRITE_INDEX = 7;
-	public static final int NET_ALL_INDEX = 8;
-	public static final int NET_REC_INDEX = 9;
-	public static final int NET_TRA_INDEX = 10;
-	public static final int NET_UID_INDEX = 11;
-	public static final int BATT_ALL_INDEX = 12;
-	public static final int AUDIO_ALL_INDEX = 13;
-	
-	private static final int mPrecision = 2;
-	private LoadingService mContext;
-	protected int mUID;
-	protected String mPID;
-	protected String mProcessName;
-	private HashMap<Integer, Integer> mAmountInt = new HashMap<Integer, Integer>();
-	private HashMap<Integer, Integer> mCount = new HashMap<Integer, Integer>();
-	private HashMap<Integer, Integer> mMax = new HashMap<Integer, Integer>();
-	private HashMap<Integer, Integer> mMin = new HashMap<Integer, Integer>();
-	private HashMap<Integer, Integer> mMedian = new HashMap<Integer, Integer>();
-	private HashMap<Integer, Float> mMean = new HashMap<Integer, Float>();
-	private HashMap<Integer, Float> mVar = new HashMap<Integer, Float>();
-	private HashMap<Integer, ArrayList<Integer>> mValues = new HashMap<Integer, ArrayList<Integer>>();
-	
-	protected abstract void dumpValues();
+public abstract class BasicFunc extends BasicDef {
 
-	protected void insertValues(int index, ArrayList<String> output) {
-		output.add( index, getValues(index));
-	}
+    private static final int mPrecision = 2;
+    private LoadingService mContext;
+    protected int mUID=0;
+    protected String mPID=null;
+    protected boolean hasValue = false;
+    protected String mProcessName;
+    private HashMap<Integer, Integer> mAmountInt = new HashMap<Integer, Integer>();
+    private HashMap<Integer, Double> mAmountFloat = new HashMap<Integer, Double>();
+    private HashMap<Integer, Integer> mCount = new HashMap<Integer, Integer>();
+    private HashMap<Integer, Integer> mMax = new HashMap<Integer, Integer>();
+    private HashMap<Integer, Float> mMaxFloat = new HashMap<Integer, Float>();
+    private HashMap<Integer, Integer> mMin = new HashMap<Integer, Integer>();
+    private HashMap<Integer, Float> mMinFloat = new HashMap<Integer, Float>();
+    private HashMap<Integer, Float> mMedian = new HashMap<Integer, Float>();
+    private HashMap<Integer, Float> mMean = new HashMap<Integer, Float>();
+    private HashMap<Integer, Float> mVar = new HashMap<Integer, Float>();
+    private HashMap<Integer, ArrayList<Integer>> mValues = new HashMap<Integer, ArrayList<Integer>>();
+    private HashMap<Integer, ArrayList<Float>> mValuesFloat = new HashMap<Integer, ArrayList<Float>>();
 
-	protected void insertMean(int index, ArrayList<String> output) {
-		output.add( index, getMean(index));
-	}
+    protected abstract void dumpValues();
 
-	protected void insertMax(int index, ArrayList<String> output) {
-		output.add( index, getMax(index));
-	}
+    protected void insertValues(int index, ArrayList<String> output) {
+        output.add( index, getValues(index));
+    }
 
-	protected void insertMin(int index, ArrayList<String> output) {
-		output.add( index, getMin(index));
-	}
+    protected void insertMean(int index, ArrayList<String> output) {
+        output.add( index, getMean(index));
+    }
 
-	protected void insertAmount(int index, ArrayList<String> output) {
-		output.add( index, getMin(index));
-	}
+    protected void insertMax(int index, ArrayList<String> output) {
+        output.add( index, getMax(index));
+    }
 
-	protected ArrayList<String> dataPasing(String load) {
-		ArrayList<String> result = new ArrayList<String>();
-		String[] toks = load.split(" ");
-		int idx=0;
+    protected void insertMin(int index, ArrayList<String> output) {
+        output.add( index, getMin(index));
+    }
+
+    protected void insertAmount(int index, ArrayList<String> output) {
+        output.add( index, getMin(index));
+    }
+
+    protected ArrayList<String> dataPasing(String load) {
+        ArrayList<String> result = new ArrayList<String>();
+        String[] toks = load.split(" ");
+        int idx=0;
         for (int i=0;i<toks.length;i++)  {
-        	String s = toks[i];
-        	if(s.length()>0) {
-        		//Log.v(Loading.TAG,"data: result["+idx+"]="+s);
-        		result.add(idx, s);
-        		idx++;
-        	}
+            String s = toks[i];
+            if(s.length()>0) {
+                //Log.v(Loading.TAG,"data: result["+idx+"]="+s);
+                result.add(idx, s);
+                idx++;
+            }
         }
-		return result;
-	}
-	
-	protected void recordMaxMin(int index, int value) {
-		if (mMax.get(index)==null && mMin.get(index)==null) {
-			if(Loading.DEBUG && Loading.AMOUNT_MEAN)
-				Log.v(Loading.TAG,"index["+index+"], MAX("+value+") ,MIN("+value+")");
-			mMax.put(index, value);
-			mMin.put(index, value);
-		}
-		if (value > mMax.get(index)) {
-			if(Loading.DEBUG && Loading.AMOUNT_MEAN)
-				Log.v(Loading.TAG,"index["+index+"], MAX("+value+")");
-			mMax.put(index,value);
-		}
-		if (value < mMin.get(index)) {
-			if(Loading.DEBUG && Loading.AMOUNT_MEAN)
-				Log.v(Loading.TAG,"index["+index+"], MIN("+value+")");
-			mMin.put(index,value);
-		}
-	}
+        return result;
+    }
 
-	protected void recordMean(int index, int value) {
-		if (mCount.get(index)!=null && mCount.get(index)!=0) {
-			if(Loading.DEBUG && Loading.AMOUNT_MEAN) {
-				Log.v(Loading.TAG,"mAmountInt.put("+index+", "+mAmountInt.get(index)+"+"+value);
-			}
-			mAmountInt.put(index, mAmountInt.get(index)+value);
+    protected void recordMaxMin(int index, int value) {
+        if (mMax.get(index)==null && mMin.get(index)==null) {
+            if(Loading.AMOUNT_MEAN)
+                Log.v(Loading.TAG,"index["+index+"], MAX("+value+") ,MIN("+value+")");
+            mMax.put(index, value);
+            mMin.put(index, value);
+        }
+        if (value > mMax.get(index)) {
+            if(Loading.AMOUNT_MEAN)
+                Log.v(Loading.TAG,"index["+index+"], MAX("+value+")");
+            mMax.put(index,value);
+        }
+        if (value < mMin.get(index)) {
+            if(Loading.AMOUNT_MEAN)
+                Log.v(Loading.TAG,"index["+index+"], MIN("+value+")");
+            mMin.put(index,value);
+        }
+    }
+
+    protected void recordMaxMin(int index, float value) {
+        if (mMaxFloat.get(index)==null && mMinFloat.get(index)==null) {
+            if(Loading.AMOUNT_MEAN)
+                Log.v(Loading.TAG,"index["+index+"], MAX("+value+") ,MIN("+value+")");
+            mMaxFloat.put(index, value);
+            mMinFloat.put(index, value);
+        }
+        if (value > mMaxFloat.get(index)) {
+            if(Loading.AMOUNT_MEAN)
+                Log.v(Loading.TAG,"index["+index+"], MAX("+value+")");
+            mMaxFloat.put(index,value);
+        }
+        if (value < mMinFloat.get(index)) {
+            if(Loading.AMOUNT_MEAN)
+                Log.v(Loading.TAG,"index["+index+"], MIN("+value+")");
+            mMinFloat.put(index,value);
+        }
+    }
+    protected void recordMean(int index, int value) {
+        if (mCount.get(index)!=null
+                && mCount.get(index)!=0) {
+            if(Loading.AMOUNT_MEAN) {
+                Log.v(Loading.TAG,"mAmountInt.put("+index+", "+mAmountInt.get(index)+"+"+value);
+            }
+            mAmountInt.put(index, mAmountInt.get(index)+value);
             mCount.put(index, mCount.get(index)+1);
             mValues.get(index).add(value);
-		} else {
-			if(Loading.DEBUG && Loading.AMOUNT_MEAN) {
-				Log.v(Loading.TAG,"mAmountInt.put("+index+", "+value);
-			}
-	        mAmountInt.put(index, value);
-	        mCount.put(index, 1);
-	        ArrayList<Integer> values = new ArrayList<Integer>();
-	        values.add(value);
-	        mValues.put(index, values);
-		}
-	}
+        } else {
+            if(Loading.AMOUNT_MEAN) {
+                Log.v(Loading.TAG,"mAmountInt.put("+index+", "+value);
+            }
+            mAmountInt.put(index, value);
+            mCount.put(index, 1);
+            ArrayList<Integer> values = new ArrayList<Integer>();
+            values.add(value);
+            mValues.put(index, values);
+        }
+    }
+    protected void recordMean(int index, float value) {
+        if (mCount.get(index)!=null
+                && mCount.get(index)!=0) {
+            if(Loading.AMOUNT_MEAN) {
+                Log.v(Loading.TAG,"mAmountFloat.put("+index+", "+mAmountFloat.get(index)+"+"+value);
+            }
+            mAmountFloat.put(index, mAmountFloat.get(index)+value);
+            mCount.put(index, mCount.get(index)+1);
+            mValuesFloat.get(index).add(value);
+        } else {
+            if(Loading.AMOUNT_MEAN) {
+                Log.v(Loading.TAG,"mAmountFloat.put("+index+", "+value);
+            }
+            mAmountFloat.put(index, (double) value);
+            mCount.put(index, 1);
+            ArrayList<Float> values = new ArrayList<Float>();
+            values.add(value);
+            mValuesFloat.put(index, values);
+        }
+    }
+    protected String getValues(int index) {
+        return "--";
+    }
 
-	protected String getValues(int index) {
-		return String.valueOf(mAmountInt.get(index));
-	}
+    protected String getMax(int index) {
+        if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX)
+            return String.valueOf(mMaxFloat.get(index));
+        else
+            return String.valueOf(mMax.get(index));
+    }
 
-	protected String getMax(int index) {
-		return String.valueOf(mMax.get(index));
-	}
+    protected String getMin(int index) {
+        if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX)
+            return String.valueOf(mMinFloat.get(index));
+        else
+            return String.valueOf(mMin.get(index));
+    }
 
-	protected String getMin(int index) {
-		return String.valueOf(mMin.get(index));
-	}
+    protected String getAmount(int index) {
+        if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX)
+            return String.valueOf(mAmountFloat.get(index));
+        else
+            return String.valueOf(mAmountInt.get(index));
+    }
 
-	protected String getAmount(int index) {
-		return String.valueOf(mAmountInt.get(index));
-	}
+    protected String getMean(int index) {
+        if (mCount!=null &&
+                mCount.get(index) !=null &&
+                mCount.get(index)>0) {
+            if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX) {
+                float mean = round(mAmountFloat.get(index)/(float)mCount.get(index),2);
+                mMean.put(index, mean);
+                if(Loading.AMOUNT_MEAN)
+                    Log.v(Loading.TAG,"mAmountFloat["+index+"], "+
+                            mAmountFloat.get(index)+"/"+(float)mCount.get(index)+") = "+mean);
+                return String.valueOf(mean);
+            } else {
+                float mean = round((float)mAmountInt.get(index)/(float)mCount.get(index),2);
+                mMean.put(index, mean);
+                if(Loading.AMOUNT_MEAN)
+                    Log.v(Loading.TAG,"mAmountInt["+index+"], "+
+                            (float)mAmountInt.get(index)+"/"+(float)mCount.get(index)+") = "+mean);
+                return String.valueOf(mean);
+            }
+        } else {
+            return "";
+        }
+    }
 
-	protected String getMean(int index) {
-		if (mCount!=null && mCount.get(index)>0) {
-			float mean = round((float)mAmountInt.get(index)/(float)mCount.get(index));
-			mMean.put(index, mean);
-			if(Loading.DEBUG && Loading.AMOUNT_MEAN)
-				Log.v(Loading.TAG,"index["+index+"], "+(float)mAmountInt.get(index)+"/"+(float)mCount.get(index)+") = "+mean);
-			return String.valueOf(mean);
-		} else {
-			return "";
-		}
-	}
-	private float round(float value) {
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMaximumFractionDigits(2);
-		String result = nf.format(value).replace(",", "");
-		return Float.valueOf(result);
-	}
-	private float round(double value) {
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMaximumFractionDigits(2);
-		String result = nf.format(value).replace(",", "");
-		return Float.valueOf(result);
-	}
-	protected String getMedian(int index) {
-		if (mCount!=null && mCount.get(index)>0) {
-			float value;
-			ArrayList<Integer> values = mValues.get(index);
-			Collections.sort(values);
-			int num = mCount.get(index);
-			String degStr = "num="+num+"; ";
-			if(Loading.DEBUG && Loading.MEDIAN) {
-				for (int i=0; i<values.size();i++) {
-					degStr+= "["+(i+1)+"]:"+values.get(i)+",";
-				}
-				Log.v(Loading.TAG,"index["+index+"], degStr="+degStr);
-			}
-			if (num%2==0) {
-				int vidx = (num/2)-1;
-				value = ((float)values.get(vidx)+(float)values.get(vidx+1))/2;
-				if(Loading.DEBUG && Loading.MEDIAN)
-					Log.v(Loading.TAG,"index["+index+"], ("+values.get(vidx)+"+"+values.get(vidx+1)+")/2="+value);
-			} else {
-				int vidx = (num/2)-1;
-				value = values.get(vidx+1);
-				if(Loading.DEBUG && Loading.MEDIAN)
-					Log.v(Loading.TAG,"index["+index+"], m="+(vidx+1)+"; value="+value);
-			}
-			if(Loading.DEBUG && Loading.MEDIAN)
-				Log.v(Loading.TAG,"index["+index+"], Median="+value);
-			return String.valueOf(value);
-		} else {
-			return "";
-		}
-	}
-	protected String getVariance(int index) {
-		if (mCount!=null && mCount.get(index)>0) {
-			float mean = mMean.get(index);
-			double amount=0;
+    protected float round(float value,int dig) {
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(dig);
+        String result = nf.format(value).replace(",", "");
+        return Float.valueOf(result);
+    }
 
-			ArrayList<Integer> values = mValues.get(index);
-			for (int i=0; i<values.size();i++) {
-				int value=values.get(i);
-				amount+=(value-mean)*(value-mean);
-				if(Loading.DEBUG && Loading.VARIANCE)
-					Log.v(Loading.TAG,"index["+index+"], ("+value+"-"+mean+")^2="+(value-mean)*(value-mean));
-			}
-			float variance = round(amount/mCount.get(index));
-			mVar.put(index, variance);
-			if(Loading.DEBUG && Loading.VARIANCE)
-				Log.v(Loading.TAG,"index["+index+"], Variance: "+amount+"/"+mCount.get(index)+" ="+variance);
-			return String.valueOf(variance);
-		} else {
-			return "";
-		}
-	}
-	protected String getSD(int index) {
-		if (mCount!=null && mCount.get(index)>0) {
-			float sd = round((float)Math.sqrt(mVar.get(index)));
-			if(Loading.DEBUG && Loading.SD)
-				Log.v(Loading.TAG,"index["+index+"], Standard Deviation: sqrt("+mVar.get(index)+") ="+sd);
-			return String.valueOf(sd);
-		} else {
-			return "";
-		}
-	}
+    private float round(double value,int dig) {
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(dig);
+        String result = nf.format(value).replace(",", "");
+        return Float.valueOf(result);
+    }
+
+    protected String getMedian(int index) {
+        if (mCount!=null &&
+                mCount.get(index) !=null &&
+                mCount.get(index)>0) {
+            float value;
+            if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX) {
+                ArrayList<Float> values = mValuesFloat.get(index);
+                Collections.sort(values);
+                int num = mCount.get(index);
+                String degStr = "num="+num+"; ";
+                if(Loading.MEDIAN) {
+                    for (int i=0; i<values.size();i++) {
+                        degStr+= "["+(i+1)+"]:"+values.get(i)+",";
+                    }
+                    Log.v(Loading.TAG,"index["+index+"], degStr="+degStr);
+                }
+                if (num%2==0) {
+                    int vidx = (num/2)-1;
+                    value = (values.get(vidx)+values.get(vidx+1))/2;
+                    if(Loading.MEDIAN)
+                        Log.v(Loading.TAG,"index["+index+"], ("+values.get(vidx)+"+"+values.get(vidx+1)+")/2="+value);
+                } else {
+                    int vidx = (num/2)-1;
+                    value = values.get(vidx+1);
+                    if(Loading.MEDIAN)
+                        Log.v(Loading.TAG,"index["+index+"], m="+(vidx+1)+"; value="+value);
+                }
+                if(Loading.MEDIAN)
+                    Log.v(Loading.TAG,"index["+index+"], Median="+value);
+                return String.valueOf(value);
+            } else {
+                ArrayList<Integer> values = mValues.get(index);
+                Collections.sort(values);
+                int num = mCount.get(index);
+                String degStr = "num="+num+"; ";
+                if(Loading.MEDIAN) {
+                    for (int i=0; i<values.size();i++) {
+                        degStr+= "["+(i+1)+"]:"+values.get(i)+",";
+                    }
+                    Log.v(Loading.TAG,"index["+index+"], degStr="+degStr);
+                }
+                if (num%2==0) {
+                    int vidx = (num/2)-1;
+                    value = ((float)values.get(vidx)+(float)values.get(vidx+1))/2;
+                    if(Loading.MEDIAN)
+                        Log.v(Loading.TAG,"index["+index+"], ("+values.get(vidx)+"+"+values.get(vidx+1)+")/2="+value);
+                } else {
+                    int vidx = (num/2)-1;
+                    value = values.get(vidx+1);
+                    if(Loading.MEDIAN)
+                        Log.v(Loading.TAG,"index["+index+"], m="+(vidx+1)+"; value="+value);
+                }
+                if(Loading.MEDIAN)
+                    Log.v(Loading.TAG,"index["+index+"], Median="+value);
+                return String.valueOf(value);
+            }
+        } else {
+            return "";
+        }
+    }
+
+    protected String getVariance(int index) {
+        float mean = mMean.get(index);
+        double amount=0;
+        if (mCount!=null &&
+                mCount.get(index)!=null &&
+                mCount.get(index)>0) {
+            if (index==NET_REC_INDEX || index==NET_TRA_INDEX || index==NET_ALL_INDEX) {
+                ArrayList<Float> values = mValuesFloat.get(index);
+                for (int i=0; i<values.size();i++) {
+                    float value=values.get(i);
+                    amount+=(value-mean)*(value-mean);
+                    if(Loading.VARIANCE)
+                        Log.v(Loading.TAG,"mValuesFloat["+index+"], ("+value+"-"+mean+")^2="+(value-mean)*(value-mean));
+                }
+                float variance = round(amount/mCount.get(index),2);
+                mVar.put(index, variance);
+                if(Loading.VARIANCE)
+                    Log.v(Loading.TAG,"index["+index+"], Variance: "+amount+"/"+mCount.get(index)+" ="+variance);
+                return String.valueOf(variance);
+            } else {
+                ArrayList<Integer> values = mValues.get(index);
+                for (int i=0; i<values.size();i++) {
+                    int value=values.get(i);
+                    amount+=(value-mean)*(value-mean);
+                    if(Loading.VARIANCE)
+                        Log.v(Loading.TAG,"mValues["+index+"], ("+value+"-"+mean+")^2="+(value-mean)*(value-mean));
+                }
+                float variance = round(amount/mCount.get(index),2);
+                mVar.put(index, variance);
+                if(Loading.VARIANCE)
+                    Log.v(Loading.TAG,"index["+index+"], Variance: "+amount+"/"+mCount.get(index)+" ="+variance);
+                return String.valueOf(variance);
+            }
+        } else {
+            return "";
+        }
+    }
+    protected String getSD(int index) {
+        if (mCount!=null && mCount.get(index)>0) {
+            float sd = round((float)Math.sqrt(mVar.get(index)),2);
+            if(Loading.SD)
+                Log.v(Loading.TAG,"index["+index+"], Standard Deviation: sqrt("+mVar.get(index)+") ="+sd);
+            return String.valueOf(sd);
+        } else {
+            return "";
+        }
+    }
+
+    protected void clearAllRecord(int index) {
+        Log.v(Loading.TAG,"clearAllRecord, index="+index);
+        if (mCount!=null) {
+            synchronized (this) {
+                mCount.put(index, 0);
+                mAmountInt.put(index, 0);
+                mMax.put(index, 0);
+                mMin.put(index, 0);
+            }
+        }
+    }
+
 }

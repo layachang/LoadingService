@@ -48,53 +48,93 @@ public class MemInfo extends BasicFunc {
  * VmallocUsed:       62252 kB
  * VmallocChunk:      46020 kB
  */
-	HashMap<String,Integer> mData = new HashMap<String,Integer>();
-	
-	private int mInitTime = -1;
-	private int mLastTime = -1;
+    HashMap<String,Integer> mData = new HashMap<String,Integer>();
+    private int mInitTime = -1;
+    private int mLastTime = -1;
 
-	protected void dumpValues() {
-		ArrayList<String> result = null;
-	    try {
-	        RandomAccessFile reader = new RandomAccessFile(Loading.STR_MEM_MEMINFO, "r");
-	        for(;;){
-		        String load = reader.readLine();
-		        if(load==null) {
-		        	reader.close();
-		        	break;
-		        }
-		        result = dataPasing(load);
-		        if(Loading.DEBUG && Loading.MEM_DEBUG) Log.v(Loading.TAG, "load: "+load);
-		        String key = result.get(0).replace(":", "");
-		        mData.put(key, Integer.parseInt(result.get(1)));
-	        } 
+    protected void dumpValues() {
+        if(Loading.MEM_DEBUG)
+            Log.v(Loading.TAG, "[--MemInfo--]");
+        ArrayList<String> result = null;
+        try {
+            RandomAccessFile reader = new RandomAccessFile(Loading.STR_MEM_MEMINFO, "r");
+            for(;;){
+                String load = reader.readLine();
+                if(load==null) {
+                    reader.close();
+                    break;
+                }
+                result = dataPasing(load);
+                if(Loading.MEM_DEBUG) Log.v(Loading.TAG, "load: "+load);
+                String key = result.get(0).replace(":", "");
+                mData.put(key, Integer.parseInt(result.get(1)));
+            }
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
 
-	        
-	    } 
-	    catch (IOException ex) {
-	    	ex.printStackTrace();
-	    }
-	}
+    private int getMemUsed() {
+        return Math.round( (mData.get("MemTotal")-mData.get("MemFree"))*100 / mData.get("MemTotal") );
+    }
+    private int getMemFree() {
+        return Math.round( mData.get("MemFree")*100 / mData.get("MemTotal") );
+    }
+    private int getMemBuffers() {
+        return Math.round( mData.get("Buffers")*100 / mData.get("MemTotal") );
+    }
+    private int getMemCached() {
+        return Math.round( mData.get("Cached")*100 / mData.get("MemTotal") );
+    }
+    private int getMemActive() {
+        return Math.round( mData.get("Active")*100 / mData.get("MemTotal") );
+    }
+    private int getMemInactive() {
+        return Math.round( mData.get("Inactive")*100 / mData.get("MemTotal") );
+    }
 
-	private int getMemUsed() {
-		return Math.round(
-				(mData.get("MemTotal")-mData.get("MemFree"))*100 / mData.get("MemTotal")
-				);
-	}
+    @Override
+    protected String getValues(int index) {
+        if(Loading.MEM_DEBUG)
+            Log.v(Loading.TAG,BasicFunc.mClassName[index]+"/"+BasicFunc.mResourceName[index]+" getValues("+index+")");
 
-	private int getMemBuffers() { return mData.get("Buffers"); }
-	
-	private int getMemCached() { return mData.get("Cached"); }
+        if (index==MEM_USED_INDEX) {
+            final int value = getMemUsed();
+            recordMaxMin(MEM_USED_INDEX, value);
+            recordMean(MEM_USED_INDEX, value);
+            return String.valueOf(value);
 
-	@Override
-	protected String getValues(int index) {
-		if (index==MEM_ALL_INDEX) {
-			final int used = getMemUsed();
-			recordMaxMin(MEM_ALL_INDEX, used);
-			recordMean(MEM_ALL_INDEX, used);
-			return String.valueOf(used);
-		}
-		return null;
-	}
+        } else if (index==MEM_FREE_INDEX) {
+            final int value = getMemFree();
+            recordMaxMin(MEM_FREE_INDEX, value);
+            recordMean(MEM_FREE_INDEX, value);
+            return String.valueOf(value);
 
+        } else if (index==MEM_BUFF_INDEX) {
+            final int value = getMemBuffers();
+            recordMaxMin(MEM_BUFF_INDEX, value);
+            recordMean(MEM_BUFF_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==MEM_CACHED_INDEX) {
+            final int value = getMemCached();
+            recordMaxMin(MEM_CACHED_INDEX, value);
+            recordMean(MEM_CACHED_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==MEM_ACTIVE_INDEX) {
+            final int value = getMemActive();
+            recordMaxMin(MEM_ACTIVE_INDEX, value);
+            recordMean(MEM_ACTIVE_INDEX, value);
+            return String.valueOf(value);
+
+        } else if (index==MEM_INACTIVE_INDEX) {
+            final int value = getMemInactive();
+            recordMaxMin(MEM_INACTIVE_INDEX, value);
+            recordMean(MEM_INACTIVE_INDEX, value);
+            return String.valueOf(value);
+        }
+        return "--";
+    }
 }
