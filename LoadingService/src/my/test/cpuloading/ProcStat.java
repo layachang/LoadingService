@@ -12,26 +12,22 @@ public class ProcStat extends BasicFunc {
     private int mCurrProcesses = -1;
     private int mProcs_running;
     private int mProcs_blocked;
-    private long mLastIdle = 0;
-    private long mCurrIdle = 0;
-    private long mLastCpu = 0;
-    private long mCurrCpu = 0;
     private long mLastUser = -1;
-    private long mCurrUser = 0;
+    private long mCurrUser = -1;
     private long mLastNice = -1;
-    private long mCurrNice = 0;
+    private long mCurrNice = -1;
     private long mLastSys = -1;
-    private long mCurrSys = 0;
-    private long mLastIdl = -1;
-    private long mCurrIdl = 0;
+    private long mCurrSys = -1;
+    private long mLastIdle = -1;
+    private long mCurrIdle = -1;
     private long mLastIOW = -1;
-    private long mCurrIOW = 0;
+    private long mCurrIOW = -1;
     private long mLastIRQ = -1;
-    private long mCurrIRQ = 0;
+    private long mCurrIRQ = -1;
     private long mLastSIRQ = -1;
-    private long mCurrSIRQ = 0;
+    private long mCurrSIRQ = -1;
     private long mLastIntr = -1;
-    private long mCurrIntr = 0;
+    private long mCurrIntr = -1;
     /* user: 一般跑在user mode下的processes
      * nice: 跑在user mode下的nice processes
      * system: 執行在kernel mode下的processes
@@ -65,6 +61,7 @@ public class ProcStat extends BasicFunc {
     private int init_procs_running=-1;
     private int init_procs_blocked=-1;
     private int CPU_NUM=0;
+    private boolean first=true;
 
     public ProcStat(int cpu_num) {
         CPU_NUM = cpu_num;
@@ -77,6 +74,7 @@ public class ProcStat extends BasicFunc {
                 Log.v(Loading.TAG, "[--ProcStat--]");
             boolean isIntrLoad = false;
             moveValues();
+
             RandomAccessFile reader = new RandomAccessFile(Loading.STR_CPU_STAT, "r");
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "--"+Loading.STR_CPU_STAT+"--");
@@ -84,18 +82,8 @@ public class ProcStat extends BasicFunc {
             String load = reader.readLine();
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "1:"+load);
-
             String[] toks = load.split(" ");
-            mCurrIdle = getIdle(toks);
-            if (inti_idle==-1) inti_idle = mCurrIdle;
-
-            mCurrCpu = getCpu(toks);
-            if (init_cpu==-1) init_cpu = mCurrIdle;
-
-            if(Loading.CPU_DEBUG) {
-                Log.v(Loading.TAG, "mCurrIdle:"+mCurrIdle);
-                Log.v(Loading.TAG, "mCurrCpu:"+mCurrCpu);
-            }
+            getCpuInfo(toks);
 
             load = reader.readLine(); //cpu0
             if(Loading.CPU_DEBUG)
@@ -120,40 +108,36 @@ public class ProcStat extends BasicFunc {
                 Log.v(Loading.TAG, "intr:"+load);
             toks = load.split(" ");
             mCurrIntr = Integer.parseInt(toks[1]);
-            if (init_intr==-1) init_intr = mCurrIntr;
 
             load = reader.readLine(); //ctxt
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "ctxt:"+load);
             toks = load.split(" ");
             mCurrCtxt = Integer.parseInt(toks[1]);
-            if (init_ctxt==-1) init_ctxt = mCurrCtxt;
-            
+
             load = reader.readLine(); //btime
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "btime:"+load);
 
-            load = reader.readLine(); //processes -- 累計所有cpus的context switches次數
+            load = reader.readLine(); //processes -- 紀錄有多少processes與threads被建立
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "processes:"+load);
             toks = load.split(" ");
             mCurrProcesses = Integer.parseInt(toks[1]);
-            if (init_processes==-1) init_processes = mCurrProcesses;
-            
+
             load = reader.readLine(); //procs_running -- 紀錄cpu正執行多少個processes
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "procs_running:"+load);
             toks = load.split(" ");
             mProcs_running = Integer.parseInt(toks[1]);
-            if (init_procs_running==-1) init_procs_running = mProcs_running;
 
             load = reader.readLine(); //procs_blocked -- 記錄當下有多少process被block住等待I/O服務完成
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "procs_blocked:"+load);
             toks = load.split(" ");
             mProcs_blocked = Integer.parseInt(toks[1]);
-            if (init_procs_blocked==-1) init_procs_blocked = mProcs_blocked;
 
+            first = false;
             if(Loading.CPU_DEBUG)
                 Log.v(Loading.TAG, "-------------------------");
             reader.close();
@@ -163,50 +147,48 @@ public class ProcStat extends BasicFunc {
     }
     
     private void moveValues() {
+        mLastUser = mCurrUser;
+        mLastNice = mCurrNice;
+        mLastSys = mCurrSys;
         mLastIdle = mCurrIdle;
-        mLastCpu = mCurrCpu;
-        init_ctxt = mCurrCtxt;
-        init_processes = mCurrProcesses;
+        mLastIOW = mCurrIOW;
+        mLastIRQ = mCurrIRQ;
+        mLastSIRQ = mCurrSIRQ;
+        mLastCtxt = mCurrCtxt;
+        mLastIntr = mCurrIntr;
+        mLastProcesses = mCurrProcesses;
     }
 
-    private long getIdle(String[] toks) {
-        mCurrIdl = Long.parseLong(toks[5]);
-        if (mLastIdl==-1) {
-            mLastIdl = mCurrIdl;
-        }
-        int var =  (int) (mCurrIdl - mLastIdl);
-        mLastIdl = mCurrIdl;
-        return mCurrIdl;
-    }
-
-    private long getCpu(String[] toks) {
+    private void getCpuInfo(String[] toks) {
         mCurrUser = Long.parseLong(toks[2]);
         mCurrNice = Long.parseLong(toks[3]);
         mCurrSys = Long.parseLong(toks[4]);
+        mCurrIdle = Long.parseLong(toks[5]);
         mCurrIOW = Long.parseLong(toks[6]);
         mCurrIRQ = Long.parseLong(toks[7]);
         mCurrSIRQ = Long.parseLong(toks[8]);
-        long l = mCurrUser + mCurrNice + mCurrSys + mCurrIOW + mCurrIRQ + mCurrSIRQ;
-        if(Loading.CPU_DEBUG)
-            Log.v(Loading.TAG,  mCurrUser +"+"+mCurrNice +"+"+mCurrSys +"+"+mCurrIOW +"+"+
-                                mCurrIRQ +"+"+mCurrSIRQ +" = " + String.valueOf(l));
-        return l;
-
     }
 
     private int getUtil() {
-        float input = (mCurrCpu - mLastCpu)*100 /
-                        ((mCurrCpu + mCurrIdle) - (mLastCpu + mLastIdle)) ;
+        float input = (getCurrUsed() - getLastUsed())*100 /
+                        ((getCurrUsed() + mCurrIdle) - (getLastUsed() + mLastIdle)) ;
         int result = Math.round(input) ; 
         return result;
     }
-
+    private long getCurrUsed() {
+        return mCurrUser+mCurrNice+mCurrSys+mCurrIOW+mCurrIRQ+mCurrSIRQ;
+    }
+    private long getLastUsed() {
+        return mLastUser+mLastNice+mLastSys+mLastIOW+mLastIRQ+mLastSIRQ;
+    }
+    private int getUsed() {
+        return getUser()+getNice()+getSys()+getIOW()+getIRQ()+getSIRQ();
+    }
     private int getUser() {
         if (mLastUser==-1) {
             mLastUser = mCurrUser;
         }
         int var =  (int) (mCurrUser - mLastUser);
-        mLastUser = mCurrUser;
         return var;
     }
     private int getNice() {
@@ -214,7 +196,6 @@ public class ProcStat extends BasicFunc {
             mLastNice = mCurrNice;
         }
         int var =  (int) (mCurrNice - mLastNice);
-        mLastNice = mCurrNice;
         return var;
     }
     private int getSys() {
@@ -222,15 +203,13 @@ public class ProcStat extends BasicFunc {
             mLastSys = mCurrSys;
         }
         int var =  (int) (mCurrSys - mLastSys);
-        mLastSys = mCurrSys;
         return var;
     }
     private int getIdle() {
-        if (mLastIdl==-1) {
-            mLastIdl = mCurrIdl;
+        if (mLastIdle==-1) {
+            mLastIdle = mCurrIdle;
         }
-        int var =  (int) (mCurrIdl - mLastIdl);
-        mLastIdl = mCurrIdl;
+        int var =  (int) (mCurrIdle - mLastIdle);
         return var;
     }
     private int getIOW() {
@@ -238,7 +217,6 @@ public class ProcStat extends BasicFunc {
             mLastIOW = mCurrIOW;
         }
         int var =  (int) (mCurrIOW - mLastIOW);
-        mLastIOW = mCurrIOW;
         return var;
     }
     private int getIRQ() {
@@ -246,7 +224,6 @@ public class ProcStat extends BasicFunc {
             mLastIRQ = mCurrIRQ;
         }
         int var =  (int) (mCurrIRQ - mLastIRQ);
-        mLastIRQ = mCurrIRQ;
         return var;
     }
     private int getSIRQ() {
@@ -254,7 +231,6 @@ public class ProcStat extends BasicFunc {
             mLastSIRQ = mCurrSIRQ;
         }
         int var =  (int) (mCurrSIRQ - mLastSIRQ);
-        mLastSIRQ = mCurrSIRQ;
         return var;
     }
     private int getIntr() {
@@ -262,7 +238,6 @@ public class ProcStat extends BasicFunc {
             mLastIntr = mCurrIntr;
         }
         int var =  (int) (mCurrIntr - mLastIntr);
-        mLastIntr = mCurrIntr;
         return var;
     }
     private int getCtxt() {
@@ -270,7 +245,6 @@ public class ProcStat extends BasicFunc {
             mLastCtxt = mCurrCtxt;
         }
         int var =  (int) (mCurrCtxt - mLastCtxt);
-        mLastCtxt = mCurrCtxt;
         return var;
     }
     private int getProcesses() {
@@ -278,7 +252,6 @@ public class ProcStat extends BasicFunc {
             mLastProcesses = mCurrProcesses;
         }
         int var =  (int) (mCurrProcesses - mLastProcesses);
-        mLastProcesses = mCurrProcesses;
         return var;
     }
     private int getProcsRunning() { return mProcs_running; }
@@ -287,11 +260,10 @@ public class ProcStat extends BasicFunc {
     @Override
     public String getValues(int index) {
     	int value;
-        if(Loading.CPU_DEBUG)
-            Log.v(Loading.TAG,BasicFunc.mClassName[index]+"/"+BasicFunc.mResourceName[index]+" getValues("+index+")");
+
         switch (index) {
-	        case CPU_ALL_INDEX:
-	            value = getUtil();
+	        case CPU_USED_INDEX:
+	            value = getUsed();
 	            break;
 	        case CPU_USER_INDEX:
 	            value = getUser();
@@ -329,21 +301,17 @@ public class ProcStat extends BasicFunc {
 	        case CPU_PROC_B_INDEX:
 	            value = getProcsBlocked();
 	            break;
+	        case CPU_ALL_PERT_INDEX:
+	            value = getUtil();
+	            break;
 	        default:
 	            return "--";
 	        
         }
         recordMaxMin(index, value);
         recordMean(index, value);
+        if(Loading.CPU_DEBUG)
+            Log.v(Loading.TAG,BasicFunc.mClassName[index]+"/"+BasicFunc.mResourceName[index]+" getValues("+index+"), return="+value);
         return String.valueOf(value);
-    }
-    public String getMena() {
-        float input = (mCurrCpu - init_cpu)*100 /
-                ((mCurrCpu + mCurrIdle) - (init_cpu + inti_idle)) ;
-        if(Loading.AMOUNT_MEAN)
-        Log.v(Loading.TAG,
-                    "input:"+input+", ("+mCurrCpu+"-"+init_cpu+")*100 / " +
-                            "(("+mCurrCpu+"-"+mCurrIdle+")-("+init_cpu+" + "+inti_idle+"))");
-        return String.valueOf(Math.round(input));
     }
 }

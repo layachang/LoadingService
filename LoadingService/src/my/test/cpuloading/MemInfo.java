@@ -75,66 +75,63 @@ public class MemInfo extends BasicFunc {
         }
     }
 
-    private int getMemUsed() {
+    private int getMemUsedPercentage() {
         return Math.round( (mData.get("MemTotal")-mData.get("MemFree"))*100 / mData.get("MemTotal") );
     }
+    private int getMemUsed() {
+        return mData.get("MemTotal")-mData.get("MemFree");
+    }
     private int getMemFree() {
-        return Math.round( mData.get("MemFree")*100 / mData.get("MemTotal") );
+        return mData.get("MemFree");
     }
     private int getMemBuffers() {
-        return Math.round( mData.get("Buffers")*100 / mData.get("MemTotal") );
+        return mData.get("Buffers");
     }
     private int getMemCached() {
-        return Math.round( mData.get("Cached")*100 / mData.get("MemTotal") );
+        return mData.get("Cached");
     }
     private int getMemActive() {
-        return Math.round( mData.get("Active")*100 / mData.get("MemTotal") );
+        return mData.get("Active");
     }
     private int getMemInactive() {
-        return Math.round( mData.get("Inactive")*100 / mData.get("MemTotal") );
+        return mData.get("Inactive");
     }
 
     @Override
     protected String getValues(int index) {
         if(Loading.MEM_DEBUG)
             Log.v(Loading.TAG,BasicFunc.mClassName[index]+"/"+BasicFunc.mResourceName[index]+" getValues("+index+")");
-
-        if (index==MEM_USED_INDEX) {
-            final int value = getMemUsed();
-            recordMaxMin(MEM_USED_INDEX, value);
-            recordMean(MEM_USED_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==MEM_FREE_INDEX) {
-            final int value = getMemFree();
-            recordMaxMin(MEM_FREE_INDEX, value);
-            recordMean(MEM_FREE_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==MEM_BUFF_INDEX) {
-            final int value = getMemBuffers();
-            recordMaxMin(MEM_BUFF_INDEX, value);
-            recordMean(MEM_BUFF_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==MEM_CACHED_INDEX) {
-            final int value = getMemCached();
-            recordMaxMin(MEM_CACHED_INDEX, value);
-            recordMean(MEM_CACHED_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==MEM_ACTIVE_INDEX) {
-            final int value = getMemActive();
-            recordMaxMin(MEM_ACTIVE_INDEX, value);
-            recordMean(MEM_ACTIVE_INDEX, value);
-            return String.valueOf(value);
-
-        } else if (index==MEM_INACTIVE_INDEX) {
-            final int value = getMemInactive();
-            recordMaxMin(MEM_INACTIVE_INDEX, value);
-            recordMean(MEM_INACTIVE_INDEX, value);
-            return String.valueOf(value);
+        int ivalue = 0;
+        //float fvalue;
+        switch(index) {
+            case MEM_USED_PERT_INDEX:
+                ivalue = getMemUsedPercentage();
+                break;
+            case MEM_USED_INDEX:
+                ivalue = getMemUsed();
+                break;
+            case MEM_FREE_INDEX:
+                ivalue = getMemFree();
+                break;
+            case MEM_BUFF_INDEX:
+                ivalue = getMemBuffers();
+                break;
+            case MEM_CACHED_INDEX:
+                ivalue = getMemCached();
+                break;
+            case MEM_ACTIVE_INDEX:
+                ivalue = getMemActive();
+                break;
+            case MEM_INACTIVE_INDEX:
+                ivalue = getMemInactive();
+                break;
+	        default :
+                return "--";
         }
-        return "--";
+        if(Loading.MEM_DEBUG)
+            Log.v(Loading.TAG,BasicFunc.mClassName[index]+"/"+BasicFunc.mResourceName[index]+" --return="+ivalue);
+        recordMaxMin(index, ivalue);
+        recordMean(index, ivalue);
+        return String.valueOf(ivalue);
     }
 }

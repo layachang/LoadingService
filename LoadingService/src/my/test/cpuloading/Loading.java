@@ -23,7 +23,7 @@ public class Loading extends Activity {
 
     public final static boolean W2SD_DEBUG        = DEBUG && true;
 
-    public final static boolean CPU_DEBUG         = DEBUG && false; //ProcState
+    public final static boolean CPU_DEBUG         = DEBUG && true; //ProcState
     public final static boolean CPU_PID_DEBUG     = DEBUG && false; //ProcState
     public final static boolean MEM_DEBUG         = DEBUG && false; //MemInfo
     public final static boolean MEM_PID_DEBUG     = DEBUG && false; //MemInfo

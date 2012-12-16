@@ -195,7 +195,6 @@ public abstract class BasicFunc extends BasicDef {
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(dig);
         String result = nf.format(value).replace(",", "");
-        Log.v(Loading.TAG, "round("+value+","+dig+"), format="+nf.format(value)+"; return="+result);
         return Float.valueOf(result);
     }
 
@@ -316,7 +315,6 @@ public abstract class BasicFunc extends BasicDef {
     }
 
     protected void clearAllRecord(int index) {
-        Log.v(Loading.TAG,"clearAllRecord, index="+index);
         if (mCount!=null) {
             synchronized (this) {
                 mCount.put(index, 0);

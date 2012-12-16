@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 public class LoadingService extends Service  {
     private Handler handler = new Handler();
-    private int TIME_SLOT = 500;
+    private int TIME_SLOT = 1000;
     private String KEY_CACHE = "";
     private String KEY_SYSTEM = "";
     private String KEY_DATA = "";
@@ -73,7 +73,7 @@ public class LoadingService extends Service  {
     }
     private void estResTree() {
         ArrayList<Integer> cpu_all = new ArrayList<Integer>();
-        cpu_all.add(BasicFunc.CPU_ALL_INDEX);
+        cpu_all.add(BasicFunc.CPU_USED_INDEX);
         cpu_all.add(BasicFunc.CPU_USER_INDEX);
         cpu_all.add(BasicFunc.CPU_NICE_INDEX);
         cpu_all.add(BasicFunc.CPU_SYS_INDEX);
@@ -86,6 +86,7 @@ public class LoadingService extends Service  {
         cpu_all.add(BasicFunc.CPU_PROC_INDEX);
         cpu_all.add(BasicFunc.CPU_PROC_R_INDEX);
         cpu_all.add(BasicFunc.CPU_PROC_B_INDEX);
+        cpu_all.add(BasicFunc.CPU_ALL_PERT_INDEX);
         mResources.put("CpuAll", cpu_all);
 
         ArrayList<Integer> cpu_pid = new ArrayList<Integer>();
@@ -93,6 +94,7 @@ public class LoadingService extends Service  {
         mResources.put("CpuPid", cpu_pid);
 
         ArrayList<Integer> mem_all = new ArrayList<Integer>();
+        mem_all.add(BasicFunc.MEM_USED_PERT_INDEX);
         mem_all.add(BasicFunc.MEM_USED_INDEX);
         mem_all.add(BasicFunc.MEM_FREE_INDEX);
         mem_all.add(BasicFunc.MEM_BUFF_INDEX);
@@ -174,7 +176,7 @@ public class LoadingService extends Service  {
         }
     }
 
-    private void printHeadLine() {
+	private void printHeadLine() {
         StringBuffer input = new StringBuffer();
         for (int i=0;i<BasicFunc.mClassName.length;i++) {
             input.append(BasicFunc.mClassName[i]+",");

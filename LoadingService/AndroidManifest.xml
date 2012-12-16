@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="my.test.cpuloading"
     android:versionCode="2"
-    android:versionName="3.0" >
+    android:versionName="3.1" >
 
     <uses-sdk android:minSdkVersion="13"  />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
